@@ -2,13 +2,26 @@
 session_start();
 include 'connection.php';
 
+// --- SAFETY: create linker table to tie feedbacks to events (no change to your Feedback table) ---
+mysqli_query($conn, "
+    CREATE TABLE IF NOT EXISTS event_feedback (
+        student_id INT NOT NULL,
+        event_id INT NOT NULL,
+        feedback_id INT NOT NULL,
+        PRIMARY KEY (student_id, event_id),
+        FOREIGN KEY (student_id) REFERENCES members(student_id),
+        FOREIGN KEY (event_id) REFERENCES events(event_id),
+        FOREIGN KEY (feedback_id) REFERENCES feedback(feedback_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+");
+
 // Redirect if not logged in
 if (!isset($_SESSION['student_id'])) {
     header("Location: member_login.php");
     exit;
 }
 
-$student_id = $_SESSION['student_id'];
+$student_id = (int)$_SESSION['student_id'];
 
 // Fetch member info
 $sql_member = "SELECT * FROM members WHERE student_id = $student_id";
@@ -106,28 +119,6 @@ if ($res_all_clubs && mysqli_num_rows($res_all_clubs) > 0) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_club_id'])) {
     $apply_club_id = (int)$_POST['apply_club_id'];
 
-// // Handle cancel join request
-// if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_join_club_id'])) {
-//     $cancel_club_id = (int)$_POST['cancel_join_club_id'];
-
-//     // Only allow cancellation if status is 'Pending'
-//     $check_sql = "SELECT * FROM joins WHERE student_id = $student_id AND club_id = $cancel_club_id AND join_status='Pending'";
-//     $check_res = mysqli_query($conn, $check_sql);
-
-//     if ($check_res && mysqli_num_rows($check_res) > 0) {
-//         $delete_sql = "DELETE FROM joins WHERE student_id = $student_id AND club_id = $cancel_club_id AND join_status='Pending'";
-//         if (mysqli_query($conn, $delete_sql)) {
-//             header("Location: member_dashboard.php?msg=Join+request+cancelled");
-//             exit;
-//         } else {
-//             $error = "Failed to cancel join request: " . mysqli_error($conn);
-//         }
-//     } else {
-//         $error = "Cannot cancel this join request.";
-//     }
-// }
-
-
     // Check if already joined or pending
     $check_sql = "SELECT * FROM joins WHERE student_id = $student_id AND club_id = $apply_club_id";
     $check_res = mysqli_query($conn, $check_sql);
@@ -143,11 +134,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_club_id'])) {
 }
 
 // Fetch upcoming approved events with their club names
+// Also LEFT JOIN partakes to know whether THIS student already registered (attendance_status='Registered')
 $sql_events = "
-  SELECT e.event_id, e.club_id, e.title, e.event_type, e.event_date, e.start_time, e.end_time, e.approval_status,
-         c.club_name
+  SELECT 
+    e.event_id, e.club_id, e.title, e.event_type, e.event_date, e.start_time, e.end_time, e.approval_status,
+    c.club_name,
+    p.attendance_status AS my_attendance_status
   FROM events e
   JOIN clubs c ON e.club_id = c.club_id
+  LEFT JOIN partakes p 
+    ON p.event_id = e.event_id 
+   AND p.student_id = $student_id
   WHERE e.event_date >= CURDATE()
     AND LOWER(e.approval_status) = 'approved'
   ORDER BY e.event_date ASC, e.start_time ASC
@@ -164,20 +161,23 @@ if ($res_events && mysqli_num_rows($res_events) > 0) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['attend_event_id'])) {
     $attend_event_id = (int)$_POST['attend_event_id'];
 
-    // Generate a new attendee_id
-    $res_max = mysqli_query($conn, "SELECT MAX(attendee_id) AS max_id FROM partakes");
-    $max_id = 0;
-    if ($res_max && $row_max = mysqli_fetch_assoc($res_max)) {
-        $max_id = (int)$row_max['max_id'];
-    }
-    $new_attendee_id = $max_id + 1;
-
     // Check if already attending
     $check_attend_sql = "SELECT * FROM partakes WHERE student_id = $student_id AND event_id = $attend_event_id";
     $check_attend_res = mysqli_query($conn, $check_attend_sql);
     if ($check_attend_res && mysqli_num_rows($check_attend_res) === 0) {
+        // Generate a new attendee_id
+        $res_max = mysqli_query($conn, "SELECT MAX(attendee_id) AS max_id FROM partakes");
+        $max_id = 0;
+        if ($res_max && $row_max = mysqli_fetch_assoc($res_max)) {
+            $max_id = (int)$row_max['max_id'];
+        }
+        $new_attendee_id = $max_id + 1;
+
         // Insert attendance with default status 'Registered'
-        $insert_partake_sql = "INSERT INTO partakes (student_id, event_id, attendee_id, attendance_status) VALUES ($student_id, $attend_event_id, $new_attendee_id, 'Registered')";
+        $insert_partake_sql = "
+            INSERT INTO partakes (student_id, event_id, attendee_id, attendance_status) 
+            VALUES ($student_id, $attend_event_id, $new_attendee_id, 'Registered')
+        ";
         mysqli_query($conn, $insert_partake_sql);
         header("Location: member_dashboard.php?msg=Event+attendance+registered");
         exit;
@@ -193,12 +193,12 @@ $reportable_events = [];
 
 if ($role === 'President') {
     // Get club ids where this president is joined with status Approved or Joined
-    $sql_pres_clubs = "SELECT club_id FROM joins WHERE student_id = $student_id AND join_status IN ('Approved', 'Joined')";
+    $sql_pres_clubs = "SELECT club_id FROM joins WHERE student_id = $student_id AND join_status IN ('Approved', 'Joined', 'Active')";
     $res_pres_clubs = mysqli_query($conn, $sql_pres_clubs);
     $club_ids = [];
     if ($res_pres_clubs && mysqli_num_rows($res_pres_clubs) > 0) {
         while ($row = mysqli_fetch_assoc($res_pres_clubs)) {
-            $club_ids[] = $row['club_id'];
+            $club_ids[] = (int)$row['club_id'];
         }
     }
 
@@ -207,94 +207,167 @@ if ($role === 'President') {
         $rpt_title = mysqli_real_escape_string($conn, trim($_POST['rpt_title']));
         $description = mysqli_real_escape_string($conn, trim($_POST['description']));
         $performance_rating = (int)$_POST['performance_rating'];
-        $event_id = (int)$_POST['event_id'];
+        $event_id_for_report = (int)$_POST['event_id'];
 
-        // Validate rating range
+        // Fetch reportable events (needed for validation)
+        $reportable_events = [];
+        if (!empty($club_ids)) {
+            $club_ids_list = implode(',', $club_ids);
+            $sql_reportable_events = "
+                SELECT e.event_id, e.title, e.event_date
+                FROM events e
+                LEFT JOIN report r ON e.event_id = r.event_id
+                WHERE e.club_id IN ($club_ids_list)
+                  AND e.event_date < CURDATE()
+                  AND r.event_id IS NULL
+                ORDER BY e.event_date DESC
+            ";
+            $res_reportable = mysqli_query($conn, $sql_reportable_events);
+            if ($res_reportable && mysqli_num_rows($res_reportable) > 0) {
+                while ($evt = mysqli_fetch_assoc($res_reportable)) {
+                    $reportable_events[] = $evt;
+                }
+            }
+        }
+
+        // Validate rating range and event choice
         if ($performance_rating < 1 || $performance_rating > 5) {
             $report_error = "Performance rating must be between 1 and 5.";
-        } elseif (!in_array($event_id, array_column($reportable_events, 'event_id')) && !empty($club_ids)) {
-            // To check if event_id is allowed, we first need to fetch reportable events below
-            // We'll do that shortly before this condition check, so this needs reordering
+        } elseif (!in_array($event_id_for_report, array_map(function($e){return (int)$e['event_id'];}, $reportable_events))) {
+            $report_error = "Selected event is not eligible for reporting.";
         } else {
-            // Insert report with auto-increment id
+            // Insert report
             $insert_report_sql = "
                 INSERT INTO report (rpt_title, event_id, description, performance_rating)
-                VALUES ('$rpt_title', $event_id, '$description', $performance_rating)
+                VALUES ('$rpt_title', $event_id_for_report, '$description', $performance_rating)
             ";
             if (mysqli_query($conn, $insert_report_sql)) {
                 $report_success = "Report submitted successfully.";
                 // Refresh reportable_events after submission
+                $reportable_events = [];
+                if (!empty($club_ids)) {
+                    $club_ids_list = implode(',', $club_ids);
+                    $sql_reportable_events = "
+                        SELECT e.event_id, e.title, e.event_date
+                        FROM events e
+                        LEFT JOIN report r ON e.event_id = r.event_id
+                        WHERE e.club_id IN ($club_ids_list)
+                          AND e.event_date < CURDATE()
+                          AND r.event_id IS NULL
+                        ORDER BY e.event_date DESC
+                    ";
+                    $res_reportable = mysqli_query($conn, $sql_reportable_events);
+                    if ($res_reportable && mysqli_num_rows($res_reportable) > 0) {
+                        while ($evt = mysqli_fetch_assoc($res_reportable)) {
+                            $reportable_events[] = $evt;
+                        }
+                    }
+                }
             } else {
                 $report_error = "Failed to submit report: " . mysqli_error($conn);
             }
         }
-    }
-
-    // Fetch reportable events (events in clubs president joined, past events with no report)
-    if (!empty($club_ids)) {
-        $club_ids_list = implode(',', $club_ids);
-        $sql_reportable_events = "
-            SELECT e.event_id, e.title, e.event_date
-            FROM events e
-            LEFT JOIN report r ON e.event_id = r.event_id
-            WHERE e.club_id IN ($club_ids_list)
-              AND e.event_date < CURDATE()
-              AND r.event_id IS NULL
-            ORDER BY e.event_date DESC
-        ";
-        $res_reportable = mysqli_query($conn, $sql_reportable_events);
-        $reportable_events = [];
-        if ($res_reportable && mysqli_num_rows($res_reportable) > 0) {
-            while ($evt = mysqli_fetch_assoc($res_reportable)) {
-                $reportable_events[] = $evt;
+    } else {
+        // Initial fetch of reportable events for form
+        if (!empty($club_ids)) {
+            $club_ids_list = implode(',', $club_ids);
+            $sql_reportable_events = "
+                SELECT e.event_id, e.title, e.event_date
+                FROM events e
+                LEFT JOIN report r ON e.event_id = r.event_id
+                WHERE e.club_id IN ($club_ids_list)
+                  AND e.event_date < CURDATE()
+                  AND r.event_id IS NULL
+                ORDER BY e.event_date DESC
+            ";
+            $res_reportable = mysqli_query($conn, $sql_reportable_events);
+            $reportable_events = [];
+            if ($res_reportable && mysqli_num_rows($res_reportable) > 0) {
+                while ($evt = mysqli_fetch_assoc($res_reportable)) {
+                    $reportable_events[] = $evt;
+                }
             }
         }
     }
 }
-?>
 
+/* -------------------------------------------
+   FEEDBACK SECTION DATA
+   - List events where current user is Registered
+   - Left join event_feedback to mark 'Submitted'
+-------------------------------------------- */
+$sql_feedback_events = "
+    SELECT 
+        e.event_id,
+        e.title,
+        e.event_date,
+        e.event_type,
+        c.club_name,
+        p.attendance_status,
+        ef.feedback_id AS submitted_feedback_id
+    FROM partakes p
+    JOIN events e ON e.event_id = p.event_id
+    JOIN clubs c ON c.club_id = e.club_id
+    LEFT JOIN event_feedback ef 
+           ON ef.student_id = p.student_id 
+          AND ef.event_id = p.event_id
+    WHERE p.student_id = $student_id
+      AND LOWER(p.attendance_status) = 'registered'
+    ORDER BY e.event_date DESC, e.title ASC
+";
+$registered_events_for_feedback = [];
+$res_fbe = mysqli_query($conn, $sql_feedback_events);
+if ($res_fbe && mysqli_num_rows($res_fbe) > 0) {
+    while ($row = mysqli_fetch_assoc($res_fbe)) {
+        $registered_events_for_feedback[] = $row;
+    }
+}
+
+// For Attendance table rendering convenience, build a quick set of registered event ids
+$registered_event_ids = [];
+foreach ($events as $ev) {
+    if (!empty($ev['my_attendance_status']) && strtolower($ev['my_attendance_status']) === 'registered') {
+        $registered_event_ids[(int)$ev['event_id']] = true;
+    }
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- <link rel="stylesheet" href="style.css"> -->
 <meta charset="UTF-8">
 <title>Member Dashboard</title>
 <style>
+  .action-btn {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .action-btn:hover { background-color: #09255eff; }
 
-.action-btn {
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-.action-btn:hover {
-  background-color: #09255eff; /* Slightly darker on hover */
-}
-
-form select[name="apply_club_id"] {
-  background-color: transparent;
-  color: #007BFF;
-  border: 2px solid #007BFF;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: border-color 0.3s ease;
-  height: 36px; /* Match button height approximately */
-  width: 150px; /* Match button width */
-  appearance: none; /* Remove default dropdown arrow for consistency */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  text-align-last: center; /* Center selected option text */
-  margin-right: 8px; /* small spacing between dropdown and button */
-}
-form select[name="apply_club_id"]:hover {
-  border-color: #09255eff;
-}
+  form select[name="apply_club_id"] {
+    background-color: transparent;
+    color: #007BFF;
+    border: 2px solid #007BFF;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+    height: 36px;
+    width: 150px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    text-align-last: center;
+    margin-right: 8px;
+  }
+  form select[name="apply_club_id"]:hover { border-color: #09255eff; }
 
   body {
     font-family: Arial, sans-serif;
@@ -308,9 +381,10 @@ form select[name="apply_club_id"]:hover {
     background: white;
     border-radius: 10px;
     padding: 30px;
-    max-width: 900px;
+    max-width: 1000px;
     margin: auto;
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    position: relative;
   }
   h1 {
     text-align: center;
@@ -337,7 +411,7 @@ form select[name="apply_club_id"]:hover {
     background-color: #f4f4f4;
     text-align: left;
   }
-   .logout-btn {
+  .logout-btn {
     position: absolute;
     top: 20px;
     right: 20px;
@@ -349,16 +423,13 @@ form select[name="apply_club_id"]:hover {
     display: inline-block;
     padding: 8px 14px;
     background-color: #b52b38;
-;
     color: #fff;
     text-decoration: none;
     border-radius: 6px;
     font-size: 0.9rem;
     transition: background-color 0.3s ease;
   }
-  .logout-btn a:hover {
-    background-color: #cc0000;
-  }
+  .logout-btn a:hover { background-color: #cc0000; }
   .msg {
     background-color: #d4edda;
     color: #155724;
@@ -373,9 +444,19 @@ form select[name="apply_club_id"]:hover {
     border-radius: 5px;
     margin-bottom: 15px;
   }
-  label {
-    font-weight: bold;
+  label { font-weight: bold; }
+
+  /* Minor badges */
+  .badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
   }
+  .badge-green { background: #e7f8ee; color:#127c3f; border:1px solid #78d3a5; }
+  .badge-gray  { background: #f0f0f0; color:#444; border:1px solid #ddd; }
+  .muted { color:#666; font-size:0.9rem; }
 </style>
 </head>
 <body>
@@ -406,36 +487,33 @@ form select[name="apply_club_id"]:hover {
   <p><strong>Position:</strong> <?php echo htmlspecialchars($position); ?></p>
   <p><strong>Role:</strong> <?php echo htmlspecialchars($role ?: 'No role'); ?></p>
 
-<h2>Your Joined Clubs</h2>
-<?php if (!empty($joined_clubs)): ?>
-    <table>
-        <thead>
-            <tr>
-                <th>Club Name</th>
-                <th>Registration Date</th>
-                <th>Club Status</th>
-                <th>Join Date</th>
-                <th>Join Status</th>
-
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($joined_clubs as $jc): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($jc['club_name']); ?></td>
-                    <td><?php echo htmlspecialchars($jc['registration_date']); ?></td>
-                    <td><?php echo htmlspecialchars($jc['status']); ?></td>
-                    <td><?php echo htmlspecialchars($jc['join_date']); ?></td>
-                    <td><?php echo htmlspecialchars($jc['join_status']); ?></td>
-                
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-<?php else: ?>
-    <p>You have not joined any clubs yet.</p>
-<?php endif; ?>
-
+  <h2>Your Joined Clubs</h2>
+  <?php if (!empty($joined_clubs)): ?>
+      <table>
+          <thead>
+              <tr>
+                  <th>Club Name</th>
+                  <th>Registration Date</th>
+                  <th>Club Status</th>
+                  <th>Join Date</th>
+                  <th>Join Status</th>
+              </tr>
+          </thead>
+          <tbody>
+              <?php foreach ($joined_clubs as $jc): ?>
+                  <tr>
+                      <td><?php echo htmlspecialchars($jc['club_name']); ?></td>
+                      <td><?php echo htmlspecialchars($jc['registration_date']); ?></td>
+                      <td><?php echo htmlspecialchars($jc['status']); ?></td>
+                      <td><?php echo htmlspecialchars($jc['join_date']); ?></td>
+                      <td><?php echo htmlspecialchars($jc['join_status']); ?></td>
+                  </tr>
+              <?php endforeach; ?>
+          </tbody>
+      </table>
+  <?php else: ?>
+      <p>You have not joined any clubs yet.</p>
+  <?php endif; ?>
 
   <h2>Apply to Join New Clubs</h2>
   <form method="post" style="display: flex; align-items: center;">
@@ -475,7 +553,11 @@ form select[name="apply_club_id"]:hover {
               <td><?php echo htmlspecialchars($event['start_time']); ?></td>
               <td><?php echo htmlspecialchars($event['end_time']); ?></td>
               <td>
-                <button type="submit" name="attend_event_id" value="<?php echo $event['event_id']; ?>" class="action-btn">Attend</button>
+                <?php if (!empty($event['my_attendance_status']) && strtolower($event['my_attendance_status']) === 'registered'): ?>
+                  <span class="badge badge-green">Registered</span>
+                <?php else: ?>
+                  <button type="submit" name="attend_event_id" value="<?php echo (int)$event['event_id']; ?>" class="action-btn">Attend</button>
+                <?php endif; ?>
               </td>
             </tr>
           <?php endforeach; ?>
@@ -494,7 +576,7 @@ form select[name="apply_club_id"]:hover {
         <select name="event_id" id="event_id" required>
           <option value="">-- Select Event --</option>
           <?php foreach ($reportable_events as $evt): ?>
-            <option value="<?php echo $evt['event_id']; ?>">
+            <option value="<?php echo (int)$evt['event_id']; ?>">
               <?php echo htmlspecialchars($evt['title'] . ' (' . $evt['event_date'] . ')'); ?>
             </option>
           <?php endforeach; ?>
@@ -512,51 +594,89 @@ form select[name="apply_club_id"]:hover {
         <button type="submit" name="submit_report" class="action-btn">Submit Report</button>
       </form>
     <?php else: ?>
-      <p>No past events available for reporting.</p>
+      <p class="muted">No past events available for reporting.</p>
     <?php endif; ?>
   <?php endif; ?>
 
-
-
   <h2>Feedback</h2>
-<p>
-  <a href="feedback.php" class="action-btn" style="text-decoration:none; display:inline-block; margin-top:10px;">
-    Submit Feedback
-  </a>
 
-</p>
+  <?php if (!empty($registered_events_for_feedback)): ?>
+    <table>
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Club</th>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Attendance</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      <?php foreach ($registered_events_for_feedback as $fe): ?>
+        <tr>
+          <td>
+            <?php echo htmlspecialchars($fe['title']); ?>
+            <br><span class="muted">ID: <?php echo (int)$fe['event_id']; ?></span>
+          </td>
+          <td><?php echo htmlspecialchars($fe['club_name']); ?></td>
+          <td><?php echo htmlspecialchars($fe['event_type']); ?></td>
+          <td><?php echo htmlspecialchars($fe['event_date']); ?></td>
+          <td>
+            <?php if (strtolower($fe['attendance_status']) === 'registered'): ?>
+              <span class="badge badge-green">Registered</span>
+            <?php else: ?>
+              <span class="badge badge-gray"><?php echo htmlspecialchars($fe['attendance_status']); ?></span>
+            <?php endif; ?>
+          </td>
+          <td>
+            <?php if (!empty($fe['submitted_feedback_id'])): ?>
+              <span class="badge badge-green">Submitted</span>
+            <?php else: ?>
+              <a 
+                class="action-btn" 
+                href="feedback.php?event_id=<?php echo (int)$fe['event_id']; ?>">
+                Submit Feedback
+              </a>
+            <?php endif; ?>
+          </td>
+        </tr>
+      <?php endforeach; ?>
+      </tbody>
+    </table>
+  <?php else: ?>
+    <p class="muted">No registered events found to give feedback yet.</p>
+  <?php endif; ?>
 
-<?php
-// Determine if member should see Resources section
-$show_resources_section = false;
+  <?php
+  // Determine if member should see Resources section
+  $show_resources_section = false;
 
-// Only allow if member is Organizer AND membership status is Approved/Joined
-if ($position === 'Organizer' && !empty($id_value)) {
-    foreach ($joined_clubs as $club) {
-        if (in_array($club['join_status'], ['Approved', 'Active', 'Joined'])) {
-            $show_resources_section = true;
-            break; // Only need one club to allow section
-        }
-    }
-}
+  // Only allow if member is Organizer AND membership status is Approved/Joined/Active
+  if ($position === 'Organizer' && !empty($id_value)) {
+      foreach ($joined_clubs as $club) {
+          if (in_array($club['join_status'], ['Approved', 'Active', 'Joined'])) {
+              $show_resources_section = true;
+              break; // Only need one club to allow section
+          }
+      }
+  }
+  ?>
 
-?>
-
-<?php if ($show_resources_section && !empty($joined_clubs)): ?>
-    <h2>Club Resources</h2>
-    <?php foreach ($joined_clubs as $club): ?>
-        <?php if (in_array($club['join_status'], ['Approved', 'Active', 'Joined'])): ?>
-            <p>
-                <a href="resources.php?club_id=<?php echo $club['club_id']; ?>" 
-                   class="action-btn" 
-                   style="text-decoration:none; display:inline-block; margin-top:10px;">
-                    Resources for <?php echo htmlspecialchars($club['club_name']); ?>
-                </a>
-            </p>
-        <?php endif; ?>
-    <?php endforeach; ?>
-<?php endif; ?>
-
+  <?php if ($show_resources_section && !empty($joined_clubs)): ?>
+      <h2>Club Resources</h2>
+      <?php foreach ($joined_clubs as $club): ?>
+          <?php if (in_array($club['join_status'], ['Approved', 'Active', 'Joined'])): ?>
+              <p>
+                  <a href="resources.php?club_id=<?php echo (int)$club['club_id']; ?>" 
+                     class="action-btn" 
+                     style="text-decoration:none; display:inline-block; margin-top:10px;">
+                      Resources for <?php echo htmlspecialchars($club['club_name']); ?>
+                  </a>
+              </p>
+          <?php endif; ?>
+      <?php endforeach; ?>
+  <?php endif; ?>
 
 </div>
 
@@ -564,5 +684,7 @@ if ($position === 'Organizer' && !empty($id_value)) {
     <a href="logout.php">Logout</a>
 </div>
 
+</body>
+</html>
 </body>
 </html>
