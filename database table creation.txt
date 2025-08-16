@@ -1,0 +1,210 @@
+-- 1) Clubs (club_id, club_name, registration_date, status)
+CREATE TABLE Clubs (
+    club_id INT PRIMARY KEY,
+    club_name VARCHAR(100) NOT NULL,
+    registration_date DATE NOT NULL,
+    status VARCHAR(20) NOT NULL
+);
+
+-- 2) Advisor (advisor_id, club_id, first_name, last_name)
+CREATE TABLE Advisor (
+    advisor_id INT PRIMARY KEY,
+    club_id INT,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    FOREIGN KEY (club_id) REFERENCES Clubs(club_id)
+);
+
+-- 3) Students (student_id, first_name, last_name, house_no., street_no., city, date_of_birth)
+CREATE TABLE Students (
+    student_id INT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    house_no VARCHAR(10),
+    street_no VARCHAR(20),
+    city VARCHAR(10) NOT NULL,
+    date_of_birth DATE
+);
+
+-- 4) Events (event_id, club_id, title, event_type, event_date, start_time, end_time, approval_status, total_budget)
+CREATE TABLE Events (
+    event_id INT PRIMARY KEY,
+    club_id INT,
+    title VARCHAR(100),
+    event_type VARCHAR(50),
+    event_date DATE,
+    start_time TIME,
+    end_time TIME,
+    approval_status VARCHAR(20),
+    total_budget DECIMAL(10,2),
+    FOREIGN KEY (club_id) REFERENCES Clubs(club_id)
+);
+
+-- 5) Resources (resource_id, club_id, resource_name, resource_type, availability_status, quantity)
+CREATE TABLE Resources (
+    resource_id INT PRIMARY KEY,
+    club_id INT,
+    resource_name VARCHAR(20) NOT NULL,
+    resource_type VARCHAR(50),
+    availability_status VARCHAR(20) NOT NULL,
+    quantity INT default 0,
+    FOREIGN KEY (club_id) REFERENCES Clubs(club_id)
+);
+
+-- 6) Report (report_id, rpt_title, created_by, description, performance_rating)
+CREATE TABLE Report (
+    report_id INT PRIMARY KEY,
+    rpt_title VARCHAR(100) not null,
+    created_by INT not null,
+    description TEXT,
+    performance_rating INT default 0,
+    FOREIGN KEY (created_by) REFERENCES Students(student_id)
+);
+
+-- 7) Feedback (feedback_id, student_id, rating, comments, submitted_on)
+CREATE TABLE Feedback (
+    feedback_id INT PRIMARY KEY,
+    student_id INT,
+    rating INT default 0 ,
+    comments TEXT,
+    submitted_on DATE not null,
+    FOREIGN KEY (student_id) REFERENCES Students(student_id)
+);
+
+-- 8) Joins (student_id, club_id, join_date, join_status)
+CREATE TABLE Joins (
+    student_id INT,
+    club_id INT,
+    join_date DATE,
+    join_status VARCHAR(20),
+    PRIMARY KEY (student_id, club_id),
+    FOREIGN KEY (student_id) REFERENCES Students(student_id),
+    FOREIGN KEY (club_id) REFERENCES Clubs(club_id)
+);
+
+-- 9) Partakes (student_id, event_id, attendance_status)
+CREATE TABLE Partakes (
+    student_id INT,
+    event_id INT,
+    attendance_status VARCHAR(20),
+    PRIMARY KEY (student_id, event_id),
+    FOREIGN KEY (student_id) REFERENCES Students(student_id),
+    FOREIGN KEY (event_id) REFERENCES Events(event_id)
+);
+
+-- 10) Attends (student_id, event_id)
+CREATE TABLE Attends (
+    student_id INT,
+    event_id INT,
+    PRIMARY KEY (student_id, event_id),
+    FOREIGN KEY (student_id) REFERENCES Students(student_id),
+    FOREIGN KEY (event_id) REFERENCES Events(event_id)
+);
+
+-- 11) Members (student_id, report_id, rank)
+CREATE TABLE Members (
+    student_id INT,
+    report_id INT,
+    rank VARCHAR(20),
+    PRIMARY KEY (student_id, report_id),
+    FOREIGN KEY (student_id) REFERENCES Students(student_id),
+    FOREIGN KEY (report_id) REFERENCES Report(report_id)
+);
+
+-- 12) Attendees (student_id, slot)
+CREATE TABLE Attendees (
+    student_id INT,
+    slot VARCHAR(20),
+    PRIMARY KEY (student_id, slot),
+    FOREIGN KEY (student_id) REFERENCES Students(student_id)
+);
+
+-- 13) Volunteer (student_id, vol_id, report_id, start_session)
+CREATE TABLE Volunteer (
+    student_id INT,
+    vol_id INT,
+    report_id INT,
+    start_session DATETIME,
+    PRIMARY KEY (student_id, vol_id),
+    FOREIGN KEY (student_id) REFERENCES Students(student_id),
+    FOREIGN KEY (report_id) REFERENCES Report(report_id)
+);
+
+-- 14) President (student_id, vol_id, president_id, start_date, end_date)
+CREATE TABLE President (
+    student_id INT,
+    vol_id INT,
+    president_id INT PRIMARY KEY,
+    start_date DATE,
+    end_date DATE,
+    FOREIGN KEY (student_id, vol_id) REFERENCES Volunteer(student_id, vol_id)
+);
+
+-- 15) Executive (student_id, vol_id, exec_id, start_date, end_date)
+CREATE TABLE Executive (
+    student_id INT,
+    vol_id INT,
+    exec_id INT PRIMARY KEY,
+    start_date DATE,
+    end_date DATE,
+    FOREIGN KEY (student_id, vol_id) REFERENCES Volunteer(student_id, vol_id)
+);
+
+-- 16) Organizer (student_id, org_id, work_hours)
+CREATE TABLE Organizer (
+    student_id INT,
+    org_id INT PRIMARY KEY,
+    work_hours INT,
+    FOREIGN KEY (student_id) REFERENCES Students(student_id)
+);
+
+-- 17) Supervisor (student_id, org_id, sup_id, start_date, end_date)
+CREATE TABLE Supervisor (
+    student_id INT,
+    org_id INT,
+    sup_id INT PRIMARY KEY,
+    start_date DATE,
+    end_date DATE,
+    FOREIGN KEY (student_id) REFERENCES Students(student_id),
+    FOREIGN KEY (org_id) REFERENCES Organizer(org_id)
+);
+
+-- 18) Clubs_cell_number (club_id, cell_number)
+CREATE TABLE Clubs_cell_number (
+    club_id INT,
+    cell_number VARCHAR(20),
+    PRIMARY KEY (club_id, cell_number),
+    FOREIGN KEY (club_id) REFERENCES Clubs(club_id)
+);
+
+-- 19) Advisor_email (advisor_id, email)
+CREATE TABLE Advisor_email (
+    advisor_id INT,
+    email VARCHAR(100),
+    PRIMARY KEY (advisor_id, email),
+    FOREIGN KEY (advisor_id) REFERENCES Advisor(advisor_id)
+);
+
+-- 20) Advisor_phone (advisor_id, phone_number)
+CREATE TABLE Advisor_phone (
+    advisor_id INT,
+    phone_number VARCHAR(20),
+    PRIMARY KEY (advisor_id, phone_number),
+    FOREIGN KEY (advisor_id) REFERENCES Advisor(advisor_id)
+);
+
+-- 21) Students_email (student_id, email)
+CREATE TABLE Students_email (
+    student_id INT,
+    email VARCHAR(100),
+    PRIMARY KEY (student_id, email),
+    FOREIGN KEY (student_id) REFERENCES Students(student_id)
+);
+
+-- 22) Students_phone (student_id, phone_number)
+CREATE TABLE Students_phone (
+    student_id INT,
+    phone_number VARCHAR(20),
+    PRIMARY KEY (student_id, phone_number),
+    FOREIGN KEY (student_id) REFERENCES Students(student_id)
+);
