@@ -8,19 +8,6 @@ if (!isset($_SESSION['student_id'])) {
 }
 $student_id = (int)$_SESSION['student_id'];
 
-// Ensure linker table exists (no change to your Feedback table)
-mysqli_query($conn, "
-    CREATE TABLE IF NOT EXISTS event_feedback (
-        student_id INT NOT NULL,
-        event_id INT NOT NULL,
-        feedback_id INT NOT NULL,
-        PRIMARY KEY (student_id, event_id),
-        FOREIGN KEY (student_id) REFERENCES members(student_id),
-        FOREIGN KEY (event_id) REFERENCES events(event_id),
-        FOREIGN KEY (feedback_id) REFERENCES feedback(feedback_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-");
-
 $event_id = isset($_GET['event_id']) ? (int)$_GET['event_id'] : 0;
 
 // Validate the event_id and that the current user is registered for it
@@ -60,10 +47,10 @@ if ($event_id > 0) {
 
     // Check if feedback already submitted for this event by this student
     $sql_existing = "
-        SELECT ef.feedback_id 
-        FROM event_feedback ef
-        WHERE ef.student_id = $student_id
-          AND ef.event_id = $event_id
+        SELECT feedback_id 
+        FROM feedback
+        WHERE student_id = $student_id
+          AND event_id = $event_id
         LIMIT 1
     ";
     $res_existing = mysqli_query($conn, $sql_existing);
@@ -92,7 +79,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $sql_existing2 = "
         SELECT feedback_id 
-        FROM event_feedback 
+        FROM feedback 
         WHERE student_id = $student_id AND event_id = $event_id
         LIMIT 1
     ";
@@ -131,33 +118,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $error_msg = "Submitted date is required.";
     } else {
         // Insert into Feedback (your original table)
-        $sql = "INSERT INTO Feedback (student_id, rating, comments, submitted_on) VALUES (?, ?, ?, ?)";
+        $sql = "INSERT INTO feedback (student_id, event_id, rating, comments, submitted_on) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         if ($stmt === false) {
             $error_msg = "Prepare failed: " . htmlspecialchars($conn->error);
         } else {
-            $stmt->bind_param("iiss", $student_id, $rating, $comments, $submitted_on);
+            $stmt->bind_param("iiiss", $student_id, $event_id, $rating, $comments, $submitted_on);
             if ($stmt->execute()) {
                 $new_feedback_id = (int)$stmt->insert_id;
                 $stmt->close();
-
-                // Link to the event in event_feedback (prevents duplicates per event via PK)
-                $ins_link = $conn->prepare("INSERT INTO event_feedback (student_id, event_id, feedback_id) VALUES (?, ?, ?)");
-                if ($ins_link) {
-                    $ins_link->bind_param("iii", $student_id, $event_id, $new_feedback_id);
-                    if ($ins_link->execute()) {
-                        $success_msg = "Feedback submitted successfully!";
-                        $already_submitted = true;
-                        $existing_feedback_id = $new_feedback_id;
-                    } else {
-                        // If linking fails, roll back feedback insert? We’ll keep it simple and just warn.
-                        $error_msg = "Feedback saved, but linking to event failed: " . htmlspecialchars($ins_link->error);
-                    }
-                    $ins_link->close();
-                } else {
-                    $error_msg = "Feedback saved, but linking to event failed to prepare.";
-                }
-
+                $success_msg = "Feedback submitted successfully!";
+                $already_submitted = true;
+                $existing_feedback_id = $new_feedback_id;
             } else {
                 $error_msg = "Error: " . htmlspecialchars($stmt->error);
                 $stmt->close();

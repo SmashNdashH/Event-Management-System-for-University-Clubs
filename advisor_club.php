@@ -23,33 +23,33 @@ $club = mysqli_fetch_assoc($club_res);
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Helper function to check if student already has any role in this club
-function studentHasRoleInClub($conn, $student_id, $club_id) {
-    // Check President table
-    $sql_pres = "SELECT COUNT(*) AS cnt FROM president p
-                 INNER JOIN volunteer v ON p.student_id = v.student_id
-                 INNER JOIN joins j ON v.student_id = j.student_id AND j.club_id = $club_id
-                 WHERE p.student_id = $student_id";
-    $res_pres = mysqli_query($conn, $sql_pres);
-    $pres_count = mysqli_fetch_assoc($res_pres)['cnt'];
+    function studentHasRoleInClub($conn, $student_id, $club_id) {
+        // Check President table
+        $sql_pres = "SELECT COUNT(*) AS cnt FROM president p
+                     INNER JOIN volunteer v ON p.student_id = v.student_id
+                     INNER JOIN joins j ON v.student_id = j.student_id AND j.club_id = $club_id
+                     WHERE p.student_id = $student_id";
+        $res_pres = mysqli_query($conn, $sql_pres);
+        $pres_count = mysqli_fetch_assoc($res_pres)['cnt'];
 
-    // Check Executive table
-    $sql_exec = "SELECT COUNT(*) AS cnt FROM executive e
-                 INNER JOIN volunteer v ON e.student_id = v.student_id
-                 INNER JOIN joins j ON v.student_id = j.student_id AND j.club_id = $club_id
-                 WHERE e.student_id = $student_id";
-    $res_exec = mysqli_query($conn, $sql_exec);
-    $exec_count = mysqli_fetch_assoc($res_exec)['cnt'];
+        // Check Executive table
+        $sql_exec = "SELECT COUNT(*) AS cnt FROM executive e
+                     INNER JOIN volunteer v ON e.student_id = v.student_id
+                     INNER JOIN joins j ON v.student_id = j.student_id AND j.club_id = $club_id
+                     WHERE e.student_id = $student_id";
+        $res_exec = mysqli_query($conn, $sql_exec);
+        $exec_count = mysqli_fetch_assoc($res_exec)['cnt'];
 
-    // Check Supervisor table
-    $sql_sup = "SELECT COUNT(*) AS cnt FROM supervisor s
-                INNER JOIN organizer o ON s.student_id = o.student_id
-                INNER JOIN joins j ON o.student_id = j.student_id AND j.club_id = $club_id
-                WHERE s.student_id = $student_id";
-    $res_sup = mysqli_query($conn, $sql_sup);
-    $sup_count = mysqli_fetch_assoc($res_sup)['cnt'];
+        // Check Supervisor table
+        $sql_sup = "SELECT COUNT(*) AS cnt FROM supervisor s
+                    INNER JOIN organizer o ON s.student_id = o.student_id
+                    INNER JOIN joins j ON o.student_id = j.student_id AND j.club_id = $club_id
+                    WHERE s.student_id = $student_id";
+        $res_sup = mysqli_query($conn, $sql_sup);
+        $sup_count = mysqli_fetch_assoc($res_sup)['cnt'];
 
-    return ($pres_count > 0 || $exec_count > 0 || $sup_count > 0);
-}
+        return ($pres_count > 0 || $exec_count > 0 || $sup_count > 0);
+    }
 
     // Create event
     if (isset($_POST['create_event'])) {
@@ -100,10 +100,10 @@ function studentHasRoleInClub($conn, $student_id, $club_id) {
         exit;
     }
 
-    // Approve / Cancel event
+    // Approve / Disapprove event
     if (isset($_POST['event_action'])) {
         $event_id = intval($_POST['event_id']);
-        $action = $_POST['event_action']; // 'Approve' or 'Cancel'
+        $action = $_POST['event_action']; // 'Approve' or 'Disapprove'
 
         if ($action === 'Approve' || $action === 'Disapprove') {
             $new_status = $action === 'Approve' ? 'Approved' : 'Disapproved';
@@ -114,126 +114,137 @@ function studentHasRoleInClub($conn, $student_id, $club_id) {
         }
     }
 
-// Delete role handler (president, executive, supervisor)
-if (isset($_POST['delete_role']) && isset($_POST['role_id'])) {
-    $role = $_POST['delete_role'];
-    $role_id = intval($_POST['role_id']);
+    // Delete role handler (president, executive, supervisor)
+    if (isset($_POST['delete_role']) && isset($_POST['role_id'])) {
+        $role = $_POST['delete_role'];
+        $role_id = intval($_POST['role_id']);
 
-    // Sanitize role name and delete from relevant table
-    if ($role === 'president') {
-        mysqli_query($conn, "DELETE FROM president WHERE president_id = $role_id");
-    } elseif ($role === 'executive') {
-        mysqli_query($conn, "DELETE FROM executive WHERE exec_id = $role_id");
-    } elseif ($role === 'supervisor') {
-        mysqli_query($conn, "DELETE FROM supervisor WHERE sup_id = $role_id");
+        if ($role === 'president') {
+            mysqli_query($conn, "DELETE FROM president WHERE president_id = $role_id");
+        } elseif ($role === 'executive') {
+            mysqli_query($conn, "DELETE FROM executive WHERE exec_id = $role_id");
+        } elseif ($role === 'supervisor') {
+            mysqli_query($conn, "DELETE FROM supervisor WHERE sup_id = $role_id");
+        }
+        header("Location: advisor_club.php");
+        exit;
     }
-    header("Location: advisor_club.php");
-    exit;
-}
 
-// Assign President (one at a time)
-if (isset($_POST['assign_president'])) {
-    $student_id = intval($_POST['president_student_id']);
-
-    // Check if a president already assigned for this club
-    $check = mysqli_query($conn, "
-      SELECT p.president_id FROM president p
-      WHERE p.student_id IN (
-        SELECT student_id FROM joins WHERE club_id = $club_id
-      )
-      LIMIT 1
-    ");
-    if (mysqli_num_rows($check) == 0) {
-        // Fetch vol_id of student from volunteer table in this club
-        $vol_res = mysqli_query($conn, "
-          SELECT v.vol_id FROM volunteer v
-          INNER JOIN joins j ON v.student_id = j.student_id
-          WHERE v.student_id = $student_id AND j.club_id = $club_id
+    // Assign President
+    if (isset($_POST['assign_president'])) {
+        $student_id = intval($_POST['president_student_id']);
+        $check = mysqli_query($conn, "
+          SELECT p.president_id FROM president p
+          WHERE p.student_id IN (
+            SELECT student_id FROM joins WHERE club_id = $club_id
+          )
           LIMIT 1
         ");
-        if ($vol_row = mysqli_fetch_assoc($vol_res)) {
-            $vol_id = intval($vol_row['vol_id']);
-            $president_id = rand(1000, 9999);
-            mysqli_query($conn, "
-              INSERT INTO president (student_id, vol_id, president_id, start_date)
-              VALUES ($student_id, $vol_id, $president_id, CURDATE())
+        if (mysqli_num_rows($check) == 0) {
+            $vol_res = mysqli_query($conn, "
+              SELECT v.vol_id FROM volunteer v
+              INNER JOIN joins j ON v.student_id = j.student_id
+              WHERE v.student_id = $student_id AND j.club_id = $club_id
+              LIMIT 1
             ");
+            if ($vol_row = mysqli_fetch_assoc($vol_res)) {
+                $vol_id = intval($vol_row['vol_id']);
+                $president_id = rand(1000, 9999);
+                mysqli_query($conn, "
+                  INSERT INTO president (student_id, vol_id, president_id, start_date)
+                  VALUES ($student_id, $vol_id, $president_id, CURDATE())
+                ");
+            }
         }
+        header("Location: advisor_club.php");
+        exit;
     }
-    header("Location: advisor_club.php");
-    exit;
-}
 
-// Assign Executive (one at a time)
-if (isset($_POST['assign_executive'])) {
-    $student_id = intval($_POST['executive_student_id']);
-
-    $check = mysqli_query($conn, "
-      SELECT e.exec_id FROM executive e
-      WHERE e.student_id IN (
-        SELECT student_id FROM joins WHERE club_id = $club_id
-      )
-      LIMIT 1
-    ");
-    if (mysqli_num_rows($check) == 0) {
-        $vol_res = mysqli_query($conn, "
-          SELECT v.vol_id FROM volunteer v
-          INNER JOIN joins j ON v.student_id = j.student_id
-          WHERE v.student_id = $student_id AND j.club_id = $club_id
+    // Assign Executive
+    if (isset($_POST['assign_executive'])) {
+        $student_id = intval($_POST['executive_student_id']);
+        $check = mysqli_query($conn, "
+          SELECT e.exec_id FROM executive e
+          WHERE e.student_id IN (
+            SELECT student_id FROM joins WHERE club_id = $club_id
+          )
           LIMIT 1
         ");
-        if ($vol_row = mysqli_fetch_assoc($vol_res)) {
-            $vol_id = intval($vol_row['vol_id']);
-            $exec_id = rand(1000, 9999);
-            mysqli_query($conn, "
-              INSERT INTO executive (student_id, vol_id, exec_id, start_date)
-              VALUES ($student_id, $vol_id, $exec_id, CURDATE())
+        if (mysqli_num_rows($check) == 0) {
+            $vol_res = mysqli_query($conn, "
+              SELECT v.vol_id FROM volunteer v
+              INNER JOIN joins j ON v.student_id = j.student_id
+              WHERE v.student_id = $student_id AND j.club_id = $club_id
+              LIMIT 1
             ");
+            if ($vol_row = mysqli_fetch_assoc($vol_res)) {
+                $vol_id = intval($vol_row['vol_id']);
+                $exec_id = rand(1000, 9999);
+                mysqli_query($conn, "
+                  INSERT INTO executive (student_id, vol_id, exec_id, start_date)
+                  VALUES ($student_id, $vol_id, $exec_id, CURDATE())
+                ");
+            }
         }
+        header("Location: advisor_club.php");
+        exit;
     }
-    header("Location: advisor_club.php");
-    exit;
-}
 
-// Assign Supervisor (one at a time)
-if (isset($_POST['assign_supervisor'])) {
-    $student_id = intval($_POST['supervisor_student_id']);
-
-    $check = mysqli_query($conn, "
-      SELECT s.sup_id FROM supervisor s
-      WHERE s.student_id IN (
-        SELECT student_id FROM joins WHERE club_id = $club_id
-      )
-      LIMIT 1
-    ");
-    if (mysqli_num_rows($check) == 0) {
-        $org_res = mysqli_query($conn, "
-          SELECT o.org_id FROM organizer o
-          INNER JOIN joins j ON o.student_id = j.student_id
-          WHERE o.student_id = $student_id AND j.club_id = $club_id
+    // Assign Supervisor
+    if (isset($_POST['assign_supervisor'])) {
+        $student_id = intval($_POST['supervisor_student_id']);
+        $check = mysqli_query($conn, "
+          SELECT s.sup_id FROM supervisor s
+          WHERE s.student_id IN (
+            SELECT student_id FROM joins WHERE club_id = $club_id
+          )
           LIMIT 1
         ");
-        if ($org_row = mysqli_fetch_assoc($org_res)) {
-            $org_id = intval($org_row['org_id']);
-            $sup_id = rand(1000, 9999);
+        if (mysqli_num_rows($check) == 0) {
+            $org_res = mysqli_query($conn, "
+              SELECT o.org_id FROM organizer o
+              INNER JOIN joins j ON o.student_id = j.student_id
+              WHERE o.student_id = $student_id AND j.club_id = $club_id
+              LIMIT 1
+            ");
+            if ($org_row = mysqli_fetch_assoc($org_res)) {
+                $org_id = intval($org_row['org_id']);
+                $sup_id = rand(1000, 9999);
+                mysqli_query($conn, "
+                  INSERT INTO supervisor (student_id, org_id, sup_id, start_date)
+                  VALUES ($student_id, $org_id, $sup_id, CURDATE())
+                ");
+            }
+        }
+        header("Location: advisor_club.php");
+        exit;
+    }
+
+    // Approve pending join requests
+    if (isset($_POST['approve_join'])) {
+        $student_id = intval($_POST['student_id']);
+        if (!studentHasRoleInClub($conn, $student_id, $club_id)) {
             mysqli_query($conn, "
-              INSERT INTO supervisor (student_id, org_id, sup_id, start_date)
-              VALUES ($student_id, $org_id, $sup_id, CURDATE())
+                UPDATE joins 
+                SET join_status = 'Active' 
+                WHERE student_id = $student_id AND club_id = $club_id
             ");
         }
+        header("Location: advisor_club.php");
+        exit;
     }
-    header("Location: advisor_club.php");
-    exit;
+
+    // Disapprove pending join requests
+    if (isset($_POST['disapprove_join'])) {
+        $student_id = intval($_POST['student_id']);
+        mysqli_query($conn, "
+            DELETE FROM joins 
+            WHERE student_id = $student_id AND club_id = $club_id AND join_status = 'Pending'
+        ");
+        header("Location: advisor_club.php");
+        exit;
+    }
 }
-
-
-}
-
-$club_id = $_SESSION['club_id'];
-
-// Fetch club info
-$club_res = mysqli_query($conn, "SELECT * FROM clubs WHERE club_id = $club_id");
-$club = mysqli_fetch_assoc($club_res);
 
 // Fetch events
 $events_res = mysqli_query($conn, "SELECT * FROM events WHERE club_id = $club_id ORDER BY event_date DESC");
@@ -256,6 +267,14 @@ $organizers_res = mysqli_query($conn, "
     WHERE j.club_id = $club_id
 ");
 
+// Fetch pending join requests
+$join_requests_res = mysqli_query($conn, "
+    SELECT j.student_id, m.first_name, m.last_name
+    FROM joins j
+    INNER JOIN members m ON j.student_id = m.student_id
+    WHERE j.club_id = $club_id AND j.join_status = 'Pending'
+");
+
 ?>
 
 <!DOCTYPE html>
@@ -265,7 +284,6 @@ $organizers_res = mysqli_query($conn, "
 <meta charset="UTF-8" />
 <title>Advisor Dashboard - <?php echo htmlspecialchars($club['club_name']); ?></title>
 <style>
-  /* Base and reset */
   body {
     font-family: Arial, sans-serif;
     background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
@@ -285,12 +303,18 @@ $organizers_res = mysqli_query($conn, "
     width: 100%;
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
   }
-  h1, h2 {
+  h1, h3 {
     text-align: center;
     color: #0056b3;
   }
-
-  /* Forms */
+  h2 {
+    color: #007BFF;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    text-align: left;
+}
   form {
     display: flex;
     flex-wrap: wrap;
@@ -318,6 +342,7 @@ $organizers_res = mysqli_query($conn, "
     font-size: 1rem;
     flex: 1 1 150px;
     transition: background-color 0.3s;
+    margin-top: 10px;
   }
   button:hover {
     background-color: #0056b3;
@@ -329,12 +354,10 @@ $organizers_res = mysqli_query($conn, "
     text-decoration: underline;
     cursor: pointer;
   }
-
-  /* Table styling */
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 10px;
+    margin-bottom: 30px;
   }
   th, td {
     padding: 12px 10px;
@@ -348,8 +371,6 @@ $organizers_res = mysqli_query($conn, "
   tr:hover {
     background-color: #e6f0ff;
   }
-
-  /* Action buttons inside table */
   .actions form {
     display: inline-block;
     margin: 0 3px;
@@ -364,11 +385,12 @@ $organizers_res = mysqli_query($conn, "
 
 <div class="container">
   <h1>Welcome, <?php echo htmlspecialchars($advisor_name) . " (" . htmlspecialchars($advisor_id) . ")"; ?></h1>
-  <h2 style="color: #0056b3; font-weight: bold; margin-top: 5px; text-align: justified; margin-bottom: 50px;">
+  <h2 style="font-weight: bold; color: #0056b3; margin-top: 5px; text-align: center; margin-bottom: 10px; border-bottom: 0px solid #ffffffff;">
+
     You advise <?php echo htmlspecialchars($club['club_name']); ?>
   </h2>
 
-  <!-- Create Event Form -->
+  <!-- Create/Edit Event Forms -->
   <?php if (!isset($edit_event)) { ?>
   <h2>Create Event</h2>
   <form method="post">
@@ -380,10 +402,7 @@ $organizers_res = mysqli_query($conn, "
     <input type="number" step="0.01" name="total_budget" placeholder="Total Budget" required />
     <button type="submit" name="create_event">Create Event</button>
   </form>
-  <?php } ?>
-
-  <!-- Edit Event Form -->
-  <?php if (isset($edit_event)) { ?>
+  <?php } else { ?>
   <h2>Edit Event</h2>
   <form method="post">
     <input type="hidden" name="event_id" value="<?php echo $edit_event['event_id']; ?>" />
@@ -418,24 +437,24 @@ $organizers_res = mysqli_query($conn, "
         <td><?php echo $event['event_date']; ?></td>
         <td><?php echo $event['approval_status']; ?></td>
         <td class="actions">
-          <form method="post" style="display:inline">
+          <form method="post">
             <input type="hidden" name="event_id" value="<?php echo $event['event_id']; ?>" />
             <button type="submit" name="edit_event_btn">Edit</button>
           </form>
-          <form method="post" style="display:inline" onsubmit="return confirm('Are you sure you want to delete this event?');">
+          <form method="post" onsubmit="return confirm('Are you sure you want to delete this event?');">
             <input type="hidden" name="event_id" value="<?php echo $event['event_id']; ?>" />
             <button type="submit" name="delete_event_btn">Delete</button>
           </form>
           <?php if ($event['approval_status'] != 'Approved') { ?>
-          <form method="post" style="display:inline">
+          <form method="post">
             <input type="hidden" name="event_id" value="<?php echo $event['event_id']; ?>" />
             <button type="submit" name="event_action" value="Approve">Approve</button>
           </form>
           <?php } ?>
-          <?php if ($event['approval_status'] != 'Cancelled') { ?>
-          <form method="post" style="display:inline">
+          <?php if ($event['approval_status'] != 'Disapproved') { ?>
+          <form method="post">
             <input type="hidden" name="event_id" value="<?php echo $event['event_id']; ?>" />
-            <button type="submit" name="event_action" value="Cancel">Cancel</button>
+            <button type="submit" name="event_action" value="Disapprove">Disapprove</button>
           </form>
           <?php } ?>
         </td>
@@ -445,158 +464,164 @@ $organizers_res = mysqli_query($conn, "
   </table>
 
 <?php
-// Helper: fetch current assigned roles for this club
-
-// Current President (only one)
-$pres_res = mysqli_query($conn, "
-    SELECT p.president_id, p.student_id, p.vol_id, m.first_name, m.last_name
-    FROM president p
-    JOIN members m ON p.student_id = m.student_id
-    WHERE p.student_id IN (
-      SELECT student_id FROM joins WHERE club_id = $club_id
-    )
-    LIMIT 1
-");
+// Fetch current roles
+$pres_res = mysqli_query($conn, "SELECT p.president_id, p.student_id, p.vol_id, m.first_name, m.last_name
+    FROM president p JOIN members m ON p.student_id = m.student_id
+    WHERE p.student_id IN (SELECT student_id FROM joins WHERE club_id = $club_id) LIMIT 1");
 $current_president = mysqli_fetch_assoc($pres_res);
 
-// Current Executive (only one)
-$exec_res = mysqli_query($conn, "
-    SELECT e.exec_id, e.student_id, e.vol_id, m.first_name, m.last_name
-    FROM executive e
-    JOIN members m ON e.student_id = m.student_id
-    WHERE e.student_id IN (
-      SELECT student_id FROM joins WHERE club_id = $club_id
-    )
-    LIMIT 1
-");
+$exec_res = mysqli_query($conn, "SELECT e.exec_id, e.student_id, e.vol_id, m.first_name, m.last_name
+    FROM executive e JOIN members m ON e.student_id = m.student_id
+    WHERE e.student_id IN (SELECT student_id FROM joins WHERE club_id = $club_id) LIMIT 1");
 $current_executive = mysqli_fetch_assoc($exec_res);
 
-// Current Supervisor (only one)
-$sup_res = mysqli_query($conn, "
-    SELECT s.sup_id, s.student_id, s.org_id, m.first_name, m.last_name
-    FROM supervisor s
-    JOIN members m ON s.student_id = m.student_id
-    WHERE s.student_id IN (
-      SELECT student_id FROM joins WHERE club_id = $club_id
-    )
-    LIMIT 1
-");
+$sup_res = mysqli_query($conn, "SELECT s.sup_id, s.student_id, s.org_id, m.first_name, m.last_name
+    FROM supervisor s JOIN members m ON s.student_id = m.student_id
+    WHERE s.student_id IN (SELECT student_id FROM joins WHERE club_id = $club_id) LIMIT 1");
 $current_supervisor = mysqli_fetch_assoc($sup_res);
 ?>
 
 <h2>Assign Roles</h2>
 
 <!-- PRESIDENT -->
-<div style="margin-bottom: 30px;">
-  <h3>President</h3>
+<div style="margin-bottom: 30px; margin-top: 30px; text-align: left;">
 
-  <?php if ($current_president) { ?>
-    <div>
-      <strong>Current President:</strong>
-      <?php
-      echo htmlspecialchars($current_president['first_name'] . " " . $current_president['last_name']);
-      echo " (Student ID: " . $current_president['student_id'] . ")";
-      echo ", Volunteer ID: " . $current_president['vol_id'];
-      echo ", President ID: " . $current_president['president_id'];
-      ?>
-      <form method="post" style="display:inline; margin-left: 10px;">
-        <input type="hidden" name="delete_role" value="president" />
-        <input type="hidden" name="role_id" value="<?php echo $current_president['president_id']; ?>" />
-        <button type="submit" onclick="return confirm('Remove this President role?')">Delete Role</button>
-      </form>
-    </div>
-  <?php } else { ?>
-    <form method="post">
-      <select name="president_student_id" required>
-        <option value="">Select Student</option>
-        <?php
-        mysqli_data_seek($volunteers_res, 0);
-        while ($vol = mysqli_fetch_assoc($volunteers_res)) {
-          echo '<option value="' . $vol['student_id'] . '">'
-               . htmlspecialchars($vol['first_name'] . ' ' . $vol['last_name'] . " (ID: " . $vol['student_id'] . ")")
-               . '</option>';
-        }
-        ?>
-      </select>
-      <button type="submit" name="assign_president">Assign President</button>
+<h3 style="text-align: left; color: #000;">President</h3>
+<?php if ($current_president) { ?>
+  <div>
+    <strong>Current President:</strong>
+    <?php echo htmlspecialchars($current_president['first_name'] . " " . $current_president['last_name']); 
+    echo " (Student ID: " . $current_president['student_id'] . ")";
+    echo ", Volunteer ID: " . $current_president['vol_id'];
+    echo ", President ID: " . $current_president['president_id'];
+    ?>
+    <form method="post" style="display:inline; margin-left:10px;">
+      <input type="hidden" name="delete_role" value="president" />
+      <input type="hidden" name="role_id" value="<?php echo $current_president['president_id']; ?>" />
+      <button type="submit" onclick="return confirm('Remove this President role?')">Delete Role</button>
     </form>
-  <?php } ?>
+  </div>
+<?php } else { ?>
+  <form method="post">
+    <select name="president_student_id" required>
+      <option value="">Select Student</option>
+      <?php
+      mysqli_data_seek($volunteers_res, 0);
+      while ($vol = mysqli_fetch_assoc($volunteers_res)) {
+        echo '<option value="' . $vol['student_id'] . '">' .
+             htmlspecialchars($vol['first_name'] . ' ' . $vol['last_name'] . " (ID:" . $vol['student_id'] . ")") .
+             '</option>';
+      }
+      ?>
+    </select>
+    <button type="submit" name="assign_president">Assign President</button>
+  </form>
+<?php } ?>
 </div>
 
 <!-- EXECUTIVE -->
-<div style="margin-bottom: 30px;">
-  <h3>Executive</h3>
-
-  <?php if ($current_executive) { ?>
-    <div>
-      <strong>Current Executive:</strong>
-      <?php
-      echo htmlspecialchars($current_executive['first_name'] . " " . $current_executive['last_name']);
-      echo " (Student ID: " . $current_executive['student_id'] . ")";
-      echo ", Volunteer ID: " . $current_executive['vol_id'];
-      echo ", Executive ID: " . $current_executive['exec_id'];
+<div style="margin-bottom: 30px; text-align: left;">
+<h3 style="text-align: left; color: #000;">Executive</h3>
+<?php if ($current_executive) { ?>
+  <div>
+    <strong>Current Executive:</strong>
+    <?php echo htmlspecialchars($current_executive['first_name'] . " " . $current_executive['last_name']);
+    echo " (Student ID: " . $current_executive['student_id'] . ")";
+    echo ", Volunteer ID: " . $current_executive['vol_id'];
+    echo ", Executive ID: " . $current_executive['exec_id'];
       ?>
-      <form method="post" style="display:inline; margin-left: 10px;">
-        <input type="hidden" name="delete_role" value="executive" />
-        <input type="hidden" name="role_id" value="<?php echo $current_executive['exec_id']; ?>" />
-        <button type="submit" onclick="return confirm('Remove this Executive role?')">Delete Role</button>
-      </form>
-    </div>
-  <?php } else { ?>
-    <form method="post">
-      <select name="executive_student_id" required>
-        <option value="">Select Student</option>
-        <?php
-        mysqli_data_seek($volunteers_res, 0);
-        while ($vol = mysqli_fetch_assoc($volunteers_res)) {
-          echo '<option value="' . $vol['student_id'] . '">'
-               . htmlspecialchars($vol['first_name'] . ' ' . $vol['last_name'] . " (ID: " . $vol['student_id'] . ")")
-               . '</option>';
-        }
-        ?>
-      </select>
-      <button type="submit" name="assign_executive">Assign Executive</button>
+    <form method="post" style="display:inline; margin-left:10px;">
+      <input type="hidden" name="delete_role" value="executive" />
+      <input type="hidden" name="role_id" value="<?php echo $current_executive['exec_id']; ?>" />
+      <button type="submit" onclick="return confirm('Remove this Executive role?')">Delete Role</button>
     </form>
-  <?php } ?>
+  </div>
+<?php } else { ?>
+  <form method="post">
+    <select name="executive_student_id" required>
+      <option value="">Select Student</option>
+      <?php
+      mysqli_data_seek($volunteers_res, 0);
+      while ($vol = mysqli_fetch_assoc($volunteers_res)) {
+        echo '<option value="' . $vol['student_id'] . '">' .
+             htmlspecialchars($vol['first_name'] . ' ' . $vol['last_name'] . " (ID:" . $vol['student_id'] . ")") .
+             '</option>';
+      }
+      ?>
+    </select>
+    <button type="submit" name="assign_executive">Assign Executive</button>
+  </form>
+<?php } ?>
 </div>
 
 <!-- SUPERVISOR -->
-<div style="margin-bottom: 30px;">
-  <h3>Supervisor</h3>
-
-  <?php if ($current_supervisor) { ?>
-    <div>
-      <strong>Current Supervisor:</strong>
-      <?php
-      echo htmlspecialchars($current_supervisor['first_name'] . " " . $current_supervisor['last_name']);
-      echo " (Student ID: " . $current_supervisor['student_id'] . ")";
-      echo ", Organizer ID: " . $current_supervisor['org_id'];
-      echo ", Supervisor ID: " . $current_supervisor['sup_id'];
-      ?>
-      <form method="post" style="display:inline; margin-left: 10px;">
-        <input type="hidden" name="delete_role" value="supervisor" />
-        <input type="hidden" name="role_id" value="<?php echo $current_supervisor['sup_id']; ?>" />
-        <button type="submit" onclick="return confirm('Remove this Supervisor role?')">Delete Role</button>
-      </form>
-    </div>
-  <?php } else { ?>
-    <form method="post">
-      <select name="supervisor_student_id" required>
-        <option value="">Select Student</option>
-        <?php
-        mysqli_data_seek($organizers_res, 0);
-        while ($org = mysqli_fetch_assoc($organizers_res)) {
-          echo '<option value="' . $org['student_id'] . '">'
-               . htmlspecialchars($org['first_name'] . ' ' . $org['last_name'] . " (ID: " . $org['student_id'] . ")")
-               . '</option>';
-        }
-        ?>
-      </select>
-      <button type="submit" name="assign_supervisor">Assign Supervisor</button>
+<div style="margin-bottom: 30px; text-align: left;">
+<h3 style="text-align: left; color: #000;">Supervisor</h3>
+<?php if ($current_supervisor) { ?>
+  <div>
+    <strong>Current Supervisor:</strong>
+    <?php echo htmlspecialchars($current_supervisor['first_name'] . " " . $current_supervisor['last_name']); 
+    echo " (Student ID: " . $current_supervisor['student_id'] . ")";
+    echo ", Organizer ID: " . $current_supervisor['org_id'];
+    echo ", Supervisor ID: " . $current_supervisor['sup_id'];
+    ?>
+    <form method="post" style="display:inline; margin-left:10px;">
+      <input type="hidden" name="delete_role" value="supervisor" />
+      <input type="hidden" name="role_id" value="<?php echo $current_supervisor['sup_id']; ?>" />
+      <button type="submit" onclick="return confirm('Remove this Supervisor role?')">Delete Role</button>
     </form>
-  <?php } ?>
+  </div>
+<?php } else { ?>
+  <form method="post">
+    <select name="supervisor_student_id" required>
+      <option value="">Select Student</option>
+      <?php
+      mysqli_data_seek($organizers_res, 0);
+      while ($org = mysqli_fetch_assoc($organizers_res)) {
+        echo '<option value="' . $org['student_id'] . '">' .
+             htmlspecialchars($org['first_name'] . ' ' . $org['last_name'] . " (ID:" . $org['student_id'] . ")") .
+             '</option>';
+      }
+      ?>
+    </select>
+    <button type="submit" name="assign_supervisor">Assign Supervisor</button>
+  </form>
+<?php } ?>
 </div>
 
+<!-- APPROVE JOIN REQUESTS -->
+<h2>Approve Join Requests</h2>
+<?php if (mysqli_num_rows($join_requests_res) > 0) { ?>
+<table>
+  <thead>
+    <tr>
+      <th>Student Name</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <?php while ($jr = mysqli_fetch_assoc($join_requests_res)) { ?>
+    <tr>
+      <td><?php echo htmlspecialchars($jr['first_name'] . ' ' . $jr['last_name']); ?></td>
+      <td>
+        <form method="post" style="display:inline-block;">
+          <input type="hidden" name="student_id" value="<?php echo $jr['student_id']; ?>" />
+          <button type="submit" name="approve_join">Approve</button>
+        </form>
+        <form method="post" style="display:inline-block;">
+          <input type="hidden" name="student_id" value="<?php echo $jr['student_id']; ?>" />
+          <button type="submit" name="disapprove_join" onclick="return confirm('Are you sure you want to disapprove this join request?')">Disapprove</button>
+        </form>
+      </td>
+    </tr>
+    <?php } ?>
+  </tbody>
+</table>
+<?php } else { ?>
+<p>No pending join requests.</p>
+<?php } ?>
+
+</div>
 
 </div>
 <div class="logout-btn" style="text-align:center; margin-top:20px;">

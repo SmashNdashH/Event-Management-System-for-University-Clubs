@@ -2,19 +2,6 @@
 session_start();
 include 'connection.php';
 
-// --- SAFETY: create linker table to tie feedbacks to events (no change to your Feedback table) ---
-mysqli_query($conn, "
-    CREATE TABLE IF NOT EXISTS event_feedback (
-        student_id INT NOT NULL,
-        event_id INT NOT NULL,
-        feedback_id INT NOT NULL,
-        PRIMARY KEY (student_id, event_id),
-        FOREIGN KEY (student_id) REFERENCES members(student_id),
-        FOREIGN KEY (event_id) REFERENCES events(event_id),
-        FOREIGN KEY (feedback_id) REFERENCES feedback(feedback_id)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-");
-
 // Redirect if not logged in
 if (!isset($_SESSION['student_id'])) {
     header("Location: member_login.php");
@@ -304,13 +291,13 @@ $sql_feedback_events = "
         e.event_type,
         c.club_name,
         p.attendance_status,
-        ef.feedback_id AS submitted_feedback_id
+        f.feedback_id AS submitted_feedback_id
     FROM partakes p
     JOIN events e ON e.event_id = p.event_id
     JOIN clubs c ON c.club_id = e.club_id
-    LEFT JOIN event_feedback ef 
-           ON ef.student_id = p.student_id 
-          AND ef.event_id = p.event_id
+    LEFT JOIN feedback f 
+       ON f.student_id = p.student_id 
+      AND f.event_id = p.event_id
     WHERE p.student_id = $student_id
       AND LOWER(p.attendance_status) = 'registered'
     ORDER BY e.event_date DESC, e.title ASC
@@ -331,6 +318,22 @@ foreach ($events as $ev) {
     }
 }
 
+// Handle feedback submission (new code block integrated)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
+    $event_id = (int)$_POST['event_id'];
+    $rating = (int)$_POST['rating'];
+    $comments = mysqli_real_escape_string($conn, trim($_POST['comments']));
+    $submitted_on = date('Y-m-d');
+
+    // Insert feedback into the feedback table
+    $sql_feedback = "INSERT INTO feedback (student_id, event_id, rating, comments, submitted_on)
+                     VALUES ($student_id, $event_id, $rating, '$comments', '$submitted_on')";
+    mysqli_query($conn, $sql_feedback);
+
+    // Redirect to avoid resubmission
+    header("Location: member_dashboard.php?msg=Feedback+submitted");
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

@@ -30,6 +30,7 @@ session_start();
       font-size: 40px;
       margin-bottom: 50px;
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+      text-align: center;
     }
 
     .role-select {
@@ -67,6 +68,17 @@ session_start();
       background-color: #fff5f5;
     }
 
+    .role-card.signup {
+      background-color: #fffcf4ff;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      margin-bottom: 40px;
+    }
+
+    .role-card.signup:hover {
+      box-shadow: 0 0 25px 5px rgba(252, 225, 179, 0.8);
+      background-color: #f6eedeff;
+    }
+
     @media (max-width: 600px) {
       .role-card {
         width: 80%;
@@ -79,6 +91,12 @@ session_start();
 
   <h1>Welcome to the Event Management System for University Clubs</h1>
 
+  <!-- Sign Up Card -->
+  <div class="role-card signup" onclick="window.location.href='member_signup.php'">
+    Sign Up
+  </div>
+
+  <!-- Advisor and Member Cards -->
   <div class="role-select">
     <div class="role-card advisor" onclick="window.location.href='login_advisor.php'">
       I'm an Advisor
