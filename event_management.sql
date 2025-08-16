@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 13, 2025 at 08:04 AM
+-- Generation Time: Aug 16, 2025 at 03:17 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -122,7 +122,7 @@ CREATE TABLE `events` (
 
 INSERT INTO `events` (`event_id`, `club_id`, `title`, `event_type`, `event_date`, `start_time`, `end_time`, `approval_status`, `total_budget`) VALUES
 (501, 1, 'Science Fair 2025', 'Exhibition', '2025-01-14', '10:00:00', '15:00:00', 'Cancelled', 30000.00),
-(502, 1, 'AI & Robotics Workshop', 'Workshop', '2025-09-05', '09:30:00', '12:30:00', 'Approved', 15000.00),
+(502, 1, 'AI & Robotics Workshop', 'Workshop', '2025-09-05', '09:30:00', '12:30:00', '15000.00', 0.00),
 (503, 2, 'Drama Fest: Classics Revived', 'Stage Performance', '2024-01-20', '16:00:00', '19:00:00', 'Approved', 25000.00),
 (504, 2, 'Playwriting Seminar', 'Seminar', '2025-10-10', '11:00:00', '16:00:00', 'Approved', 10000.00),
 (506, 2, 'Dance Battle ', 'Stage Performance', '2025-12-12', '23:38:00', '17:40:00', 'Approved', 200000.00),
@@ -192,8 +192,8 @@ INSERT INTO `joins` (`student_id`, `club_id`, `join_date`, `join_status`) VALUES
 (1005, 2, '2024-01-25', 'Active'),
 (1006, 3, '2024-02-05', 'Inactive'),
 (1007, 1, '2024-01-30', 'Active'),
-(1007, 2, '2025-08-13', 'pending'),
-(1007, 3, '2025-08-13', 'pending');
+(1007, 2, '2025-08-13', 'Pending'),
+(1007, 3, '2025-08-13', 'Pending');
 
 -- --------------------------------------------------------
 
@@ -222,7 +222,7 @@ INSERT INTO `members` (`student_id`, `first_name`, `last_name`, `house_no`, `str
 (1004, 'Tanzila', 'Noor', '8B', '12', 'Rajshahi', '2000-02-28'),
 (1005, 'Farhan', 'Hossain', '33', '9', 'Khulna', '2003-03-22'),
 (1006, 'Mehazabien', 'Mahi', '15C', '11', 'Comilla', '2002-07-17'),
-(1007, 'Abrar', 'Ahmed', '10A', '14', 'Barisal', '2001-09-05');
+(1007, 'Abrar', 'Ahmed', '10A', '14', 'Barisal', '2001-09-01');
 
 -- --------------------------------------------------------
 
@@ -325,7 +325,7 @@ CREATE TABLE `report` (
   `event_id` int(11) NOT NULL,
   `description` text DEFAULT NULL,
   `performance_rating` int(11) DEFAULT 0
-) ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -542,7 +542,7 @@ ALTER TABLE `events`
 -- AUTO_INCREMENT for table `feedback`
 --
 ALTER TABLE `feedback`
-  MODIFY `feedback_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `feedback_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables

@@ -105,8 +105,8 @@ function studentHasRoleInClub($conn, $student_id, $club_id) {
         $event_id = intval($_POST['event_id']);
         $action = $_POST['event_action']; // 'Approve' or 'Cancel'
 
-        if ($action === 'Approve' || $action === 'Cancel') {
-            $new_status = $action === 'Approve' ? 'Approved' : 'Cancelled';
+        if ($action === 'Approve' || $action === 'Disapprove') {
+            $new_status = $action === 'Approve' ? 'Approved' : 'Disapproved';
             $sql = "UPDATE events SET approval_status = '$new_status' WHERE event_id = $event_id AND club_id = $club_id";
             mysqli_query($conn, $sql);
             header("Location: advisor_club.php");

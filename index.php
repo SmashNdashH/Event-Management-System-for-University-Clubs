@@ -6,7 +6,7 @@ session_start();
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Event Management System - Welcome</title>
+  <title>Event Management System for University of Clubs - Welcome</title>
   <style>
     * {
       margin: 0;
@@ -77,7 +77,7 @@ session_start();
 </head>
 <body>
 
-  <h1>Welcome to the Event Management System for University of Clubs</h1>
+  <h1>Welcome to the Event Management System for University Clubs</h1>
 
   <div class="role-select">
     <div class="role-card advisor" onclick="window.location.href='login_advisor.php'">
