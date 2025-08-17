@@ -7,58 +7,28 @@ $student_id_input = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $student_id_input = trim($_POST['student_id']);
+    $password_input = trim($_POST['password']);
 
-    if (empty($student_id_input)) {
-        $error = 'Please enter your Student ID.';
+    if (empty($student_id_input) || empty($password_input)) {
+        $error = 'Please enter both Student ID and Password.';
     } else {
         // Sanitize input
         $student_id = mysqli_real_escape_string($conn, $student_id_input);
 
-        // Check if student_id exists in members table (optional but recommended)
+        // Fetch member by student_id
         $member_check = mysqli_query($conn, "SELECT * FROM members WHERE student_id = '$student_id'");
         if (mysqli_num_rows($member_check) == 0) {
             $error = 'Student ID not found. Please check and try again.';
         } else {
-            // Initialize roles array
-            $roles = [];
+            $member = mysqli_fetch_assoc($member_check);
 
-            // Check President
-            $res = mysqli_query($conn, "SELECT * FROM president WHERE student_id = '$student_id' AND (end_date IS NULL OR end_date > CURDATE())");
-            if (mysqli_num_rows($res) > 0) {
-                $roles[] = 'President';
-            }
-
-            // Check Executive
-            $res = mysqli_query($conn, "SELECT * FROM executive WHERE student_id = '$student_id' AND (end_date IS NULL OR end_date > CURDATE())");
-            if (mysqli_num_rows($res) > 0) {
-                $roles[] = 'Executive';
-            }
-
-            // Check Volunteer
-            $res = mysqli_query($conn, "SELECT * FROM volunteer WHERE student_id = '$student_id'");
-            if (mysqli_num_rows($res) > 0) {
-                $roles[] = 'Volunteer';
-            }
-
-            // Check Organizer
-            $res = mysqli_query($conn, "SELECT * FROM organizer WHERE student_id = '$student_id'");
-            if (mysqli_num_rows($res) > 0) {
-                $roles[] = 'Organizer';
-            }
-
-            // Check Supervisor
-            $res = mysqli_query($conn, "SELECT * FROM supervisor WHERE student_id = '$student_id' AND (end_date IS NULL OR end_date > CURDATE())");
-            if (mysqli_num_rows($res) > 0) {
-                $roles[] = 'Supervisor';
-            }
-
-            if (empty($roles)) {
-                $error = 'No assigned role found for this Student ID.';
+            // **Compare plain-text password**
+            if ($password_input !== $member['password']) {
+                $error = 'Incorrect password. Please try again.';
             } else {
-                // Save session and redirect
+                // Login successful
                 $_SESSION['student_id'] = $student_id;
-                $_SESSION['roles'] = $roles; // array of roles
-                header("Location: member_dashboard.php");  // Change as per your dashboard page
+                header("Location: member_dashboard.php");  
                 exit;
             }
         }
@@ -101,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     flex-direction: column;
     gap: 15px;
   }
-  input[type="text"] {
+  input[type="text"], input[type="password"] {
     padding: 12px;
     border: 1px solid #ccc;
     border-radius: 6px;
@@ -125,16 +95,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     text-align: center;
     margin-bottom: 15px;
   }
-
-  .back {
-    margin-top: 10px;
-    display: block;
-    text-align: center;
-    color: #007BFF;
-    cursor: pointer;
-    text-decoration: underline;
-}
-
 </style>
 </head>
 <body>
@@ -143,12 +103,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <h1>Member Login</h1>
   <?php if ($error) { echo '<div class="error">'.htmlspecialchars($error).'</div>'; } ?>
   <form method="post" action="">
-    <input type="text" name="student_id" placeholder="Enter your Student ID" required value="<?php echo htmlspecialchars($student_id_input); ?>" />
+    <input type="text" name="student_id" placeholder="Enter your Student ID" required value="<?= htmlspecialchars($student_id_input); ?>" />
+    <input type="text" name="password" placeholder="Enter your Password" required />
     <button type="submit">Login</button>
   </form>
-
-    <div class="back" onclick="window.location.href='index.php'">← Back</div>
 </div>
 
 </body>
 </html>
+

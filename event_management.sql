@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 17, 2025 at 11:27 AM
+-- Generation Time: Aug 17, 2025 at 12:14 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -31,17 +31,18 @@ CREATE TABLE `advisor` (
   `advisor_id` int(11) NOT NULL,
   `club_id` int(11) DEFAULT NULL,
   `first_name` varchar(50) NOT NULL,
-  `last_name` varchar(50) NOT NULL
+  `last_name` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `advisor`
 --
 
-INSERT INTO `advisor` (`advisor_id`, `club_id`, `first_name`, `last_name`) VALUES
-(101, 1, 'Zahirul', 'Islam'),
-(102, 2, 'Farhana', 'Kabir'),
-(103, 3, 'Nazmul', 'Ferdous');
+INSERT INTO `advisor` (`advisor_id`, `club_id`, `first_name`, `last_name`, `password`) VALUES
+(101, 1, 'Zahirul', 'Islam', 'Zahirul123'),
+(102, 2, 'Farhana', 'Kabir', 'Farhana456'),
+(103, 3, 'Nazmul', 'Ferdous', 'Nazmul789');
 
 -- --------------------------------------------------------
 
@@ -200,9 +201,10 @@ INSERT INTO `joins` (`student_id`, `club_id`, `join_date`, `join_status`) VALUES
 (1009, 2, '2025-08-17', 'Pending'),
 (1009, 3, '2025-08-17', 'Pending'),
 (1010, 1, '2025-08-17', 'Pending'),
-(1010, 2, '2025-08-17', 'Pending'),
+(1010, 2, '2025-08-17', 'Active'),
 (1010, 3, '2025-08-17', 'Pending'),
-(1011, 1, '2025-08-17', 'Active');
+(1011, 1, '2025-08-17', 'Active'),
+(1012, 2, '2025-08-17', 'Active');
 
 -- --------------------------------------------------------
 
@@ -217,24 +219,32 @@ CREATE TABLE `members` (
   `house_no` varchar(10) DEFAULT NULL,
   `street_no` varchar(20) DEFAULT NULL,
   `city` varchar(10) NOT NULL,
-  `date_of_birth` date DEFAULT NULL
+  `date_of_birth` date DEFAULT NULL,
+  `password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `members`
 --
 
-INSERT INTO `members` (`student_id`, `first_name`, `last_name`, `house_no`, `street_no`, `city`, `date_of_birth`) VALUES
-(1001, 'Imran', 'Kabir', '12A', '7', 'Dhaka', '2000-05-12'),
-(1002, 'Nusrat', 'Akter', '44', '5', 'Chattogram', '2001-11-03'),
-(1003, 'Rifat', 'Mahmud', '23', '6', 'Sylhet', '2002-08-19'),
-(1004, 'Tanzila', 'Noor', '8B', '12', 'Rajshahi', '2000-02-28'),
-(1005, 'Farhan', 'Hossain', '33', '9', 'Khulna', '2003-03-22'),
-(1006, 'Mehazabien', 'Mahi', '15C', '11', 'Comilla', '2002-07-17'),
-(1007, 'Abrar', 'Ahmed', '10A', '14', 'Barisal', '2001-09-01'),
-(1009, 'Abrar', 'Alam', '10', '6C', 'Dhaka', '2002-04-16'),
-(1010, 'Torsha', 'Alam', '10', '6C', 'Dhaka', '2002-04-16'),
-(1011, 'Sadman', 'Jawad', '10', '6C', 'Dhaka', '2002-04-16');
+INSERT INTO `members` (`student_id`, `first_name`, `last_name`, `house_no`, `street_no`, `city`, `date_of_birth`, `password`) VALUES
+(1001, 'Imran', 'Kabir', '12A', '7', 'Dhaka', '2000-05-12', ''),
+(1002, 'Nusrat', 'Akter', '44', '5', 'Chattogram', '2001-11-03', ''),
+(1003, 'Rifat', 'Mahmud', '23', '6', 'Sylhet', '2002-08-19', ''),
+(1004, 'Tanzila', 'Noor', '8B', '12', 'Rajshahi', '2000-02-28', ''),
+(1005, 'Farhan', 'Hossain', '33', '9', 'Khulna', '2003-03-22', ''),
+(1006, 'Mehazabien', 'Mahi', '15C', '11', 'Comilla', '2002-07-17', ''),
+(1007, 'Abrar', 'Ahmed', '10A', '14', 'Barisal', '2001-09-01', ''),
+(1009, 'Abrar', 'Alam', '10', '6C', 'Dhaka', '2002-04-16', ''),
+(1010, 'Torsha', 'Alam', '10', '6C', 'Dhaka', '2002-04-16', ''),
+(1011, 'Sadman', 'Jawad', '10', '6C', 'Dhaka', '2002-04-16', ''),
+(1012, 'abcd', 'efgh', '10', '6C', 'Dhaka', '2025-08-15', ''),
+(1013, 'rerr', 'etr4et', 'rtgrt', '4rt4rt', '4rt4rt', '2025-07-29', ''),
+(1014, 'emran', 'Posh', 'thth', '345', 'fgrg', '2025-08-20', ''),
+(1015, 'beaba', 'doobee', '444', '345', 'Dhaka', '2025-07-31', ''),
+(1016, 'beaba', 'hashmi', 'tuy6u', '1', 'Dhaka', '2025-08-16', 'mmm'),
+(1017, 'rt', 'Delowar', '444', '1', 'tuu', '2025-08-09', '$2y$10$gHe6DzcWqz3XX3mozJFvOuTV7vq9aTKWkzIOfkfqIJXEaYByBTYIe'),
+(1018, 'randy', 'ortega', 'tuy6u', '11', 'Gulshan 2', '2025-09-04', 'hhh');
 
 -- --------------------------------------------------------
 
@@ -280,7 +290,10 @@ INSERT INTO `organizer` (`student_id`, `org_id`, `work_hours`) VALUES
 (1007, 107, 16),
 (1001, 109, 20),
 (1009, 111, 3),
-(1011, 112, 9);
+(1011, 112, 9),
+(1013, 113, 3),
+(1014, 114, 1),
+(1017, 115, 2);
 
 -- --------------------------------------------------------
 
@@ -437,7 +450,10 @@ INSERT INTO `volunteer` (`student_id`, `vol_id`, `report_id`, `start_session`) V
 (1002, 2, NULL, '2024-02-01 10:30:00'),
 (1003, 3, NULL, '2024-03-10 08:45:00'),
 (1004, 4, NULL, '2024-01-20 14:00:00'),
-(1010, 5, NULL, '2025-08-17 04:34:00');
+(1010, 5, NULL, '2025-08-17 04:34:00'),
+(1012, 6, NULL, '2025-08-17 07:39:00'),
+(1015, 7, NULL, '2025-08-17 06:50:00'),
+(1018, 8, NULL, '2025-08-22 06:58:00');
 
 --
 -- Indexes for dumped tables
@@ -449,6 +465,7 @@ INSERT INTO `volunteer` (`student_id`, `vol_id`, `report_id`, `start_session`) V
 ALTER TABLE `advisor`
   ADD PRIMARY KEY (`advisor_id`),
   ADD UNIQUE KEY `advisor_id` (`advisor_id`),
+  ADD UNIQUE KEY `password` (`password`),
   ADD KEY `club_id` (`club_id`);
 
 --
@@ -626,13 +643,13 @@ ALTER TABLE `feedback`
 -- AUTO_INCREMENT for table `members`
 --
 ALTER TABLE `members`
-  MODIFY `student_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1012;
+  MODIFY `student_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1019;
 
 --
 -- AUTO_INCREMENT for table `organizer`
 --
 ALTER TABLE `organizer`
-  MODIFY `org_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=113;
+  MODIFY `org_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=116;
 
 --
 -- AUTO_INCREMENT for table `partakes`
@@ -674,7 +691,7 @@ ALTER TABLE `supervisor`
 -- AUTO_INCREMENT for table `volunteer`
 --
 ALTER TABLE `volunteer`
-  MODIFY `vol_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `vol_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables
