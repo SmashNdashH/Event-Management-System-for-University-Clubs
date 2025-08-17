@@ -9,7 +9,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $student_id_input = trim($_POST['student_id']);
     $password_input = trim($_POST['password']);
 
-    if (empty($student_id_input) || empty($password_input)) {
+    if (!ctype_digit($student_id_input)) {
+        $error = 'Student ID must be numeric.';
+    } elseif (empty($student_id_input) || empty($password_input)) {
         $error = 'Please enter both Student ID and Password.';
     } else {
         // Sanitize input
@@ -43,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <title>Member Login</title>
 <style>
   body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
     margin: 0;
     min-height: 100vh;
@@ -63,23 +65,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   }
   h1 {
     text-align: center;
-    color: #333; /* Match advisor login */
+    color: #333;
     font-weight: bold;
     font-size: 2rem;
     margin-bottom: 20px;
     padding-bottom: 0;
     letter-spacing: 0.5px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    border-bottom: none; /* Remove underline */
+    border-bottom: none;
   }
   form {
     display: flex;
     flex-direction: column;
-    gap: 2px; 
+    gap: 2px;
   }
   input[type="text"], input[type="password"] {
-    padding: 12px;
-    border: 1px solid #ccc;
+    padding: 12px 15px;
+    border: 1.8px solid #ccc;
     border-radius: 6px;
     font-size: 1rem;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -87,6 +89,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     color: #333;
     box-sizing: border-box;
     margin-bottom: 18px;
+    transition: border-color 0.3s ease;
+  }
+  input:focus {
+    border-color: #3b82f6;
+    outline: none;
+    background: #eef2ff;
   }
   input::placeholder {
     color: #888;
@@ -96,12 +104,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   }
   button {
     background-color: #007BFF;
-    border: none;
     color: white;
-    padding: 12px;
+    padding: 10px;
+    border: none;
+    width: 100%;
     border-radius: 6px;
     cursor: pointer;
     font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
     transition: background-color 0.3s;
   }
   button:hover {
@@ -111,6 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     color: red;
     text-align: center;
     margin-bottom: 15px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
   .back {
     margin-top: 10px;
@@ -121,6 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     text-decoration: underline;
     font-size: 1rem;
     font-weight: 500;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
 </style>
 </head>
@@ -131,8 +144,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <?php if ($error) { echo '<div class="error">'.htmlspecialchars($error).'</div>'; } ?>
   <form method="post" action="">
     <input type="text" name="student_id" placeholder="Enter your Student ID" required value="<?= htmlspecialchars($student_id_input); ?>" />
-    <input type="text" name="password" placeholder="Enter your Password" required />
-    <button type="submit">Login</button>
+    <input type="password" name="password" placeholder="Enter your Password" required />
+    <button type="submit">Log In</button>
   </form>
   <div class="back" onclick="window.location.href='index.php'">← Back</div>
 </div>

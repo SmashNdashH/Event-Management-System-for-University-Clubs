@@ -298,6 +298,14 @@ if ($role === 'President') {
     }
 }
 
+// Handle delete join request
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_join_id'])) {
+    $delete_join_id = (int)$_POST['delete_join_id'];
+    mysqli_query($conn, "DELETE FROM joins WHERE club_id = $delete_join_id AND student_id = $student_id");
+    header("Location: member_dashboard.php?msg=Join+request+deleted");
+    exit;
+}
+
 /* -------------------------------------------
    FEEDBACK SECTION DATA
    - List events where current user is Registered
@@ -352,6 +360,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
 
     // Redirect to avoid resubmission
     header("Location: member_dashboard.php?msg=Feedback+submitted");
+    exit;
+}
+
+// Handle undo submit (move this to top, before any HTML)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['undo_report_id'])) {
+    $undo_report_id = (int)$_POST['undo_report_id'];
+    mysqli_query($conn, "DELETE FROM report WHERE report_id = $undo_report_id");
+    header("Location: member_dashboard.php?msg=Report+submission+undone");
     exit;
 }
 ?>
@@ -427,7 +443,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
   }
   th, td {
     border: 1px solid #ddd;
-    padding: 8px;
+    padding: 8px; 
     font-size: 0.95rem;
   }
   th {
@@ -530,28 +546,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
 
   <h2>Your Joined Clubs</h2>
   <?php if (!empty($joined_clubs)): ?>
-      <table>
-          <thead>
-              <tr>
-                  <th>Club Name</th>
-                  <th>Registration Date</th>
-                  <th>Club Status</th>
-                  <th>Join Date</th>
-                  <th>Join Status</th>
-              </tr>
-          </thead>
-          <tbody>
-              <?php foreach ($joined_clubs as $jc): ?>
-                  <tr>
-                      <td><?php echo htmlspecialchars($jc['club_name']); ?></td>
-                      <td><?php echo htmlspecialchars($jc['registration_date']); ?></td>
-                      <td><?php echo htmlspecialchars($jc['status']); ?></td>
-                      <td><?php echo htmlspecialchars($jc['join_date']); ?></td>
-                      <td><?php echo htmlspecialchars($jc['join_status']); ?></td>
-                  </tr>
-              <?php endforeach; ?>
-          </tbody>
-      </table>
+    <form method="post">
+    <table>
+        <thead>
+            <tr>
+                <th>Club Name</th>
+                <th>Registration Date</th>
+                <th>Club Status</th>
+                <th>Join Date</th>
+                <th>Join Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($joined_clubs as $jc): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($jc['club_name']); ?></td>
+                    <td><?php echo htmlspecialchars($jc['registration_date']); ?></td>
+                    <td><?php echo htmlspecialchars($jc['status']); ?></td>
+                    <td><?php echo htmlspecialchars($jc['join_date']); ?></td>
+                    <td><?php echo htmlspecialchars($jc['join_status']); ?></td>
+                    <td style="width:1%; white-space:nowrap; text-align:center;">
+                        <?php if (strtolower($jc['join_status']) === 'pending'): ?>
+                            <button type="submit" name="delete_join_id" value="<?php echo (int)$jc['club_id']; ?>" class="action-btn" style="background:#b52b38; margin-bottom:0; margin-top:0;">Delete Request</button>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    </form>
   <?php else: ?>
       <p>You have not joined any clubs yet.</p>
   <?php endif; ?>
@@ -611,30 +635,86 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
 
   <?php if ($role === 'President'): ?>
     <h2>Submit Report for Your Club's Events</h2>
+    <?php
+      // Fetch submitted reports for president's clubs
+      $submitted_reports = [];
+      if (!empty($club_ids)) {
+        $club_ids_list = implode(',', $club_ids);
+        $sql_submitted_reports = "
+          SELECT r.*, e.title AS event_title, e.event_date
+          FROM report r
+          JOIN events e ON r.event_id = e.event_id
+          WHERE e.club_id IN ($club_ids_list)
+            AND e.event_date < CURDATE()
+          ORDER BY e.event_date DESC
+        ";
+        $res_submitted_reports = mysqli_query($conn, $sql_submitted_reports);
+        if ($res_submitted_reports && mysqli_num_rows($res_submitted_reports) > 0) {
+          while ($row = mysqli_fetch_assoc($res_submitted_reports)) {
+            $submitted_reports[] = $row;
+          }
+        }
+      }
+
+      // Handle undo submit
+      if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['undo_report_id'])) {
+        $undo_report_id = (int)$_POST['undo_report_id'];
+        mysqli_query($conn, "DELETE FROM report WHERE report_id = $undo_report_id");
+        header("Location: member_dashboard.php?msg=Report+submission+undone");
+        exit;
+      }
+    ?>
+
+    <?php if (!empty($submitted_reports)): ?>
+      <?php foreach ($submitted_reports as $rpt): ?>
+        <div style="border:1.5px solid #007BFF; border-radius:8px; padding:18px; margin-bottom:18px; background:#f7fafc;">
+          <div style="margin-bottom:12px;">
+            <strong>Event:</strong> <?php echo htmlspecialchars($rpt['event_title'] . ' (' . $rpt['event_date'] . ')'); ?>
+          </div>
+          <div style="margin-bottom:12px;">
+            <strong>Report Title:</strong> <?php echo htmlspecialchars($rpt['rpt_title']); ?>
+          </div>
+          <div style="margin-bottom:12px;">
+            <strong>Description:</strong> <?php echo htmlspecialchars($rpt['description']); ?>
+          </div>
+          <div style="margin-bottom:18px;">
+            <strong>Performance Rating:</strong> <?php echo (int)$rpt['performance_rating']; ?>
+          </div>
+          <form method="post" style="margin-top:12px;">
+            <input type="hidden" name="undo_report_id" value="<?php echo (int)$rpt['report_id']; ?>">
+            <button type="submit" class="action-btn" style="background:#b52b38;">Undo Submit</button>
+          </form>
+        </div>
+      <?php endforeach; ?>
+    <?php endif; ?>
+
     <?php if (!empty($reportable_events)): ?>
-      <form method="post">
-        <label for="event_id">Select Event:</label><br>
-        <select name="event_id" id="event_id" required>
+      <form method="post" style="max-width: 500px; margin: 0 0 30px 0; text-align: left;">
+        <label for="event_id" style="font-weight:600; color:#555; margin-bottom:8px;">Select Event:</label>
+        <select name="event_id" id="event_id" required style="width:100%; padding:12px 15px; margin-bottom:18px; border-radius:6px; border:1.8px solid #ccc; font-size:1rem; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#fff; color:#333; box-sizing:border-box;">
           <option value="">-- Select Event --</option>
           <?php foreach ($reportable_events as $evt): ?>
             <option value="<?php echo (int)$evt['event_id']; ?>">
               <?php echo htmlspecialchars($evt['title'] . ' (' . $evt['event_date'] . ')'); ?>
             </option>
           <?php endforeach; ?>
-        </select><br><br>
+        </select>
 
-        <label for="rpt_title">Report Title:</label><br>
-        <input type="text" name="rpt_title" id="rpt_title" required maxlength="100" style="width: 100%; padding: 6px;"><br><br>
+        <label for="rpt_title" style="font-weight:600; color:#555; margin-bottom:8px;">Report Title:</label>
+        <input type="text" name="rpt_title" id="rpt_title" required maxlength="100"
+          style="width:100%; padding:12px 15px; margin-bottom:18px; border-radius:6px; border:1.8px solid #ccc; font-size:1rem; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#fff; color:#333; box-sizing:border-box;">
 
-        <label for="description">Description:</label><br>
-        <textarea name="description" id="description" rows="5" style="width: 100%; padding: 6px;"></textarea><br><br>
+        <label for="description" style="font-weight:600; color:#555; margin-bottom:8px;">Description:</label>
+        <textarea name="description" id="description" rows="5"
+          style="width:100%; padding:12px 15px; margin-bottom:18px; border-radius:6px; border:1.8px solid #ccc; font-size:1rem; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#fff; color:#333; box-sizing:border-box;"></textarea>
 
-        <label for="performance_rating">Performance Rating (1 to 5):</label><br>
-        <input type="number" name="performance_rating" id="performance_rating" min="1" max="5" value="3" required><br><br>
+        <label for="performance_rating" style="font-weight:600; color:#555; margin-bottom:8px;">Performance Rating (1 to 5):</label>
+        <input type="number" name="performance_rating" id="performance_rating" min="1" max="5" required
+          style="width:100%; padding:12px 15px; margin-bottom:18px; border-radius:6px; border:1.8px solid #ccc; font-size:1rem; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#fff; color:#333; box-sizing:border-box;">
 
-        <button type="submit" name="submit_report" class="action-btn">Submit Report</button>
+        <button type="submit" name="submit_report" class="action-btn" style="width:100%; margin-top:8px;">Submit Report</button>
       </form>
-    <?php else: ?>
+    <?php elseif (empty($submitted_reports)): ?>
       <p class="muted">No past events available for reporting.</p>
     <?php endif; ?>
   <?php endif; ?>
@@ -676,7 +756,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
             <?php else: ?>
               <a 
                 class="action-btn" 
-                href="feedback.php?event_id=<?php echo (int)$fe['event_id']; ?>">
+                href="feedback.php?event_id=<?php echo (int)$fe['event_id']; ?>"
+                style="text-decoration:none;"
+              >
                 Submit Feedback
               </a>
             <?php endif; ?>

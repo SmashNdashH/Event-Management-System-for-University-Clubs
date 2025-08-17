@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 17, 2025 at 04:58 PM
+-- Generation Time: Aug 18, 2025 at 12:58 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -160,10 +160,10 @@ CREATE TABLE `executive` (
 
 CREATE TABLE `feedback` (
   `feedback_id` int(11) NOT NULL,
-  `student_id` int(11) DEFAULT NULL,
+  `student_id` int(11) NOT NULL,
   `event_id` int(11) NOT NULL,
-  `rating` int(11) DEFAULT 0,
-  `comments` text DEFAULT NULL,
+  `rating` int(11) NOT NULL DEFAULT 0,
+  `comments` text NOT NULL,
   `submitted_on` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -193,8 +193,8 @@ CREATE TABLE `joins` (
 
 INSERT INTO `joins` (`student_id`, `club_id`, `join_date`, `join_status`) VALUES
 (1001, 1, '2025-08-16', 'Active'),
-(1001, 2, '2025-08-13', 'Pending'),
 (1001, 3, '2025-08-16', 'Pending'),
+(1001, 4, '2025-08-18', 'Pending'),
 (1002, 2, '2024-02-15', 'Active'),
 (1002, 3, '2025-08-13', 'Pending'),
 (1003, 3, '2024-01-20', 'Active'),
@@ -222,7 +222,7 @@ CREATE TABLE `members` (
   `last_name` varchar(50) NOT NULL,
   `house_no` varchar(10) DEFAULT NULL,
   `street_no` varchar(20) DEFAULT NULL,
-  `city` varchar(10) NOT NULL,
+  `city` varchar(10) DEFAULT NULL,
   `date_of_birth` date DEFAULT NULL,
   `password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -243,7 +243,8 @@ INSERT INTO `members` (`student_id`, `first_name`, `last_name`, `house_no`, `str
 (1010, 'Torsha', 'Alam', '10', '6C', 'Dhaka', '2002-04-16', 'Torsha6234'),
 (1011, 'Sadman', 'Jawad', '10', '6C', 'Dhaka', '2002-04-16', 'Sadman4684'),
 (1023, 'Abrar', 'Alam', '10', '6C', 'Tochigi', '2003-04-16', '111'),
-(1025, 'Torsha', 'Alam', '10', '6C', 'Tochigi', '2003-04-16', '112');
+(1025, 'Torsha', 'Alam', '10', '6C', 'Tochigi', '2003-04-16', '112'),
+(1026, 'Sadia', 'Afrin', '10', '6C', 'Tochigi', '0000-00-00', '117');
 
 -- --------------------------------------------------------
 
@@ -263,7 +264,8 @@ CREATE TABLE `members_email` (
 INSERT INTO `members_email` (`student_id`, `email`) VALUES
 (1001, 'Imran.the.empyrean@gmail.com'),
 (1001, 'Imran.the.grandiose@gmail.com'),
-(1023, 'abrar.the.empyrean@gmail.com');
+(1023, 'abrar.the.empyrean@gmail.com'),
+(1026, 'abrar.the.empyrean@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -282,7 +284,8 @@ CREATE TABLE `members_phone` (
 
 INSERT INTO `members_phone` (`student_id`, `phone_number`) VALUES
 (1023, '09018510438'),
-(1025, '09018510438');
+(1025, '09018510438'),
+(1026, '09018510438');
 
 -- --------------------------------------------------------
 
@@ -291,7 +294,7 @@ INSERT INTO `members_phone` (`student_id`, `phone_number`) VALUES
 --
 
 CREATE TABLE `organizer` (
-  `student_id` int(11) DEFAULT NULL,
+  `student_id` int(11) NOT NULL,
   `org_id` int(11) NOT NULL,
   `work_hours` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -301,10 +304,10 @@ CREATE TABLE `organizer` (
 --
 
 INSERT INTO `organizer` (`student_id`, `org_id`, `work_hours`) VALUES
+(1001, 109, 20),
 (1005, 105, 18),
 (1006, 106, 22),
 (1007, 107, 16),
-(1001, 109, 20),
 (1009, 111, 3),
 (1011, 112, 9);
 
@@ -333,6 +336,7 @@ INSERT INTO `partakes` (`student_id`, `event_id`, `attendee_id`, `attendance_sta
 (1002, 506, 5, 'Registered'),
 (1002, 507, 4, 'Registered'),
 (1002, 508, 1, 'Registered'),
+(1002, 510, 16, 'Registered'),
 (1003, 504, 10, 'Registered'),
 (1003, 506, 12, 'Registered'),
 (1003, 507, 13, 'Registered'),
@@ -410,16 +414,15 @@ INSERT INTO `resources` (`resource_id`, `club_id`, `resource_name`, `resource_ty
 
 CREATE TABLE `superadmin` (
   `SA_ID` int(11) NOT NULL,
-  `advisor_id` int(11) NOT NULL,
-  `password` varchar(20) NOT NULL
+  `advisor_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `superadmin`
 --
 
-INSERT INTO `superadmin` (`SA_ID`, `advisor_id`, `password`) VALUES
-(1, 101, 'adminpass');
+INSERT INTO `superadmin` (`SA_ID`, `advisor_id`) VALUES
+(1, 101);
 
 -- --------------------------------------------------------
 
@@ -465,7 +468,8 @@ INSERT INTO `volunteer` (`student_id`, `vol_id`, `report_id`, `start_session`) V
 (1004, 4, NULL, '2024-01-20 14:00:00'),
 (1010, 5, NULL, '2025-08-17 04:34:00'),
 (1023, 11, NULL, '2025-08-17 19:26:00'),
-(1025, 12, NULL, '2025-08-17 19:26:00');
+(1025, 12, NULL, '2025-08-17 19:26:00'),
+(1026, 13, NULL, '2025-08-18 04:16:00');
 
 --
 -- Indexes for dumped tables
@@ -525,7 +529,7 @@ ALTER TABLE `executive`
 -- Indexes for table `feedback`
 --
 ALTER TABLE `feedback`
-  ADD PRIMARY KEY (`feedback_id`),
+  ADD PRIMARY KEY (`feedback_id`,`student_id`,`event_id`,`rating`,`comments`(100),`submitted_on`),
   ADD UNIQUE KEY `feedback_id` (`feedback_id`),
   ADD KEY `fk_feedback_member` (`student_id`),
   ADD KEY `fk_feedback_event` (`event_id`);
@@ -560,7 +564,7 @@ ALTER TABLE `members_phone`
 -- Indexes for table `organizer`
 --
 ALTER TABLE `organizer`
-  ADD PRIMARY KEY (`org_id`),
+  ADD PRIMARY KEY (`student_id`,`org_id`),
   ADD UNIQUE KEY `org_id` (`org_id`),
   ADD KEY `fk_organizer_member` (`student_id`);
 
@@ -599,9 +603,7 @@ ALTER TABLE `resources`
 --
 ALTER TABLE `superadmin`
   ADD PRIMARY KEY (`SA_ID`),
-  ADD UNIQUE KEY `SA_ID` (`SA_ID`),
-  ADD UNIQUE KEY `advisor_id` (`advisor_id`),
-  ADD UNIQUE KEY `unique_advisor` (`advisor_id`);
+  ADD UNIQUE KEY `advisor_id` (`advisor_id`);
 
 --
 -- Indexes for table `supervisor`
@@ -657,7 +659,7 @@ ALTER TABLE `feedback`
 -- AUTO_INCREMENT for table `members`
 --
 ALTER TABLE `members`
-  MODIFY `student_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1026;
+  MODIFY `student_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1027;
 
 --
 -- AUTO_INCREMENT for table `organizer`
@@ -669,7 +671,7 @@ ALTER TABLE `organizer`
 -- AUTO_INCREMENT for table `partakes`
 --
 ALTER TABLE `partakes`
-  MODIFY `attendee_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `attendee_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `president`
@@ -681,7 +683,7 @@ ALTER TABLE `president`
 -- AUTO_INCREMENT for table `report`
 --
 ALTER TABLE `report`
-  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `resources`
@@ -705,7 +707,7 @@ ALTER TABLE `supervisor`
 -- AUTO_INCREMENT for table `volunteer`
 --
 ALTER TABLE `volunteer`
-  MODIFY `vol_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `vol_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- Constraints for dumped tables

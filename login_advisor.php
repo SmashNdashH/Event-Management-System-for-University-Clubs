@@ -6,38 +6,43 @@ $error = '';
 $show_buttons = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $advisor_id = intval($_POST['advisor_id']);
-    $password = trim($_POST['password']);
-    
-    // Fetch advisor from advisor table
-    $sql = "SELECT * FROM advisor WHERE advisor_id = $advisor_id";
-    $result = mysqli_query($conn, $sql);
-
-    if (mysqli_num_rows($result) === 1) {
-        $advisor = mysqli_fetch_assoc($result);
+    $advisor_id_input = trim($_POST['advisor_id']);
+    if (!ctype_digit($advisor_id_input)) {
+        $error = "Advisor ID must be numeric.";
+    } else {
+        $advisor_id = (int)$advisor_id_input;
+        $password = trim($_POST['password']);
         
-        // Verify password (plain text)
-        if ($password === $advisor['password']) {
-            // Check if this advisor is a super admin (SA_ID = 1)
-            $sa_check = "SELECT * FROM superadmin WHERE advisor_id = $advisor_id AND SA_ID = 1";
-            $sa_result = mysqli_query($conn, $sa_check);
+        // Fetch advisor from advisor table
+        $sql = "SELECT * FROM advisor WHERE advisor_id = $advisor_id";
+        $result = mysqli_query($conn, $sql);
+
+        if (mysqli_num_rows($result) === 1) {
+            $advisor = mysqli_fetch_assoc($result);
             
-            if (mysqli_num_rows($sa_result) === 1) {
-                // Advisor is super admin, show buttons
-                $_SESSION['temp_advisor_id'] = $advisor_id; // temporarily store id
-                $show_buttons = true;
+            // Verify password (plain text)
+            if ($password === $advisor['password']) {
+                // Check if this advisor is a super admin (SA_ID = 1)
+                $sa_check = "SELECT * FROM superadmin WHERE advisor_id = $advisor_id AND SA_ID = 1";
+                $sa_result = mysqli_query($conn, $sa_check);
+                
+                if (mysqli_num_rows($sa_result) === 1) {
+                    // Advisor is super admin, show buttons
+                    $_SESSION['temp_advisor_id'] = $advisor_id; // temporarily store id
+                    $show_buttons = true;
+                } else {
+                    // Normal advisor login
+                    $_SESSION['advisor_id'] = $advisor['advisor_id'];
+                    $_SESSION['club_id'] = $advisor['club_id'];
+                    header("Location: advisor_club.php");
+                    exit;
+                }
             } else {
-                // Normal advisor login
-                $_SESSION['advisor_id'] = $advisor['advisor_id'];
-                $_SESSION['club_id'] = $advisor['club_id'];
-                header("Location: advisor_club.php");
-                exit;
+                $error = "Incorrect password.";
             }
         } else {
-            $error = "Incorrect password.";
+            $error = "Advisor ID not found.";
         }
-    } else {
-        $error = "Advisor ID not found.";
     }
 }
 

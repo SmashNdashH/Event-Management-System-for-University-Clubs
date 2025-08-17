@@ -184,8 +184,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div id="volunteerFields" class="position-specific">
-            <label>Start Session</label>
-            <input type="datetime-local" name="start_session" value="<?= $_POST['start_session'] ?? '' ?>">
+            <label for="Start_Session">Start Session</label>
+            <input
+                type="datetime-local"
+                name="start_session"
+                id="start_session"
+                value="<?= $_POST['start_session'] ?? '' ?>"
+                style="
+                    width: 100%;
+                    padding: 12px 15px;
+                    margin-bottom: 18px;
+                    border-radius: 6px;
+                    border: 1.8px solid #ccc;
+                    font-size: 1rem;
+                    transition: border-color 0.3s ease;
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    background: #f7fafc;
+                    color: #333;
+                    box-sizing: border-box;
+                "
+            >
         </div>
 
         <div id="organizerFields" class="position-specific">

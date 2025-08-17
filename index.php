@@ -1,6 +1,15 @@
 <?php
 include 'connection.php';
 session_start();
+
+// Fetch all clubs
+$clubs_res = mysqli_query($conn, "SELECT club_id, club_name FROM clubs ORDER BY club_name ASC");
+$clubs = [];
+if ($clubs_res && mysqli_num_rows($clubs_res) > 0) {
+    while ($row = mysqli_fetch_assoc($clubs_res)) {
+        $clubs[] = $row;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -69,14 +78,46 @@ session_start();
     }
 
     .role-card.signup {
-      background-color: #fffcf4ff;
+      background-color: #ffffff;
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
       margin-bottom: 40px;
     }
 
     .role-card.signup:hover {
-      box-shadow: 0 0 25px 5px rgba(252, 225, 179, 0.8);
+      box-shadow: 0 0 25px 5px rgba(245, 222, 182, 0.8);
       background-color: #f6eedeff;
+    }
+
+    .clubs-list {
+      margin: 40px auto 0 auto;
+      max-width: 700px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+      padding: 30px 24px;
+    }
+    .clubs-list h2 {
+      text-align: center;
+      color: #000000ff;
+      margin-bottom: 18px;
+      font-size: 1.5rem;
+    }
+    .club-link {
+      display: block;
+      padding: 12px 18px;
+      margin-bottom: 10px;
+      background: #f7fafc;
+      border-radius: 8px;
+      color: #333;
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 500;
+      transition: background 0.2s;
+      border: 1px solid #e0e7ef;
+    }
+    .club-link:hover {
+      background: #e0f7fa;
+      color: #0056b3;
     }
 
     @media (max-width: 600px) {
@@ -106,5 +147,18 @@ session_start();
     </div>
   </div>
 
+  <!-- Clubs List Section -->
+  <div class="clubs-list">
+    <h2>Explore Clubs</h2>
+    <?php if (!empty($clubs)): ?>
+      <?php foreach ($clubs as $club): ?>
+        <a class="club-link" href="club_info.php?club_id=<?php echo (int)$club['club_id']; ?>">
+          <?php echo htmlspecialchars($club['club_name']); ?>
+        </a>
+      <?php endforeach; ?>
+    <?php else: ?>
+      <p style="text-align:center;">No clubs found.</p>
+    <?php endif; ?>
+  </div>
 </body>
 </html>
