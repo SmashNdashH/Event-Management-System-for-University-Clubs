@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 17, 2025 at 12:14 PM
+-- Generation Time: Aug 17, 2025 at 04:58 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -86,7 +86,8 @@ CREATE TABLE `clubs` (
 INSERT INTO `clubs` (`club_id`, `club_name`, `registration_date`, `status`) VALUES
 (1, 'Science Club', '2023-01-15', 'Active'),
 (2, 'Drama Club', '2022-09-10', 'Active'),
-(3, 'Sports Club', '2021-06-20', 'Active');
+(3, 'Sports Club', '2021-06-20', 'Active'),
+(4, 'Art Club', '2025-08-17', 'Active');
 
 -- --------------------------------------------------------
 
@@ -98,6 +99,13 @@ CREATE TABLE `clubs_cell_number` (
   `club_id` int(11) NOT NULL,
   `cell_number` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `clubs_cell_number`
+--
+
+INSERT INTO `clubs_cell_number` (`club_id`, `cell_number`) VALUES
+(4, '019999999');
 
 -- --------------------------------------------------------
 
@@ -200,11 +208,7 @@ INSERT INTO `joins` (`student_id`, `club_id`, `join_date`, `join_status`) VALUES
 (1009, 1, '2025-08-17', 'Active'),
 (1009, 2, '2025-08-17', 'Pending'),
 (1009, 3, '2025-08-17', 'Pending'),
-(1010, 1, '2025-08-17', 'Pending'),
-(1010, 2, '2025-08-17', 'Active'),
-(1010, 3, '2025-08-17', 'Pending'),
-(1011, 1, '2025-08-17', 'Active'),
-(1012, 2, '2025-08-17', 'Active');
+(1010, 2, '2025-08-17', 'Active');
 
 -- --------------------------------------------------------
 
@@ -228,23 +232,18 @@ CREATE TABLE `members` (
 --
 
 INSERT INTO `members` (`student_id`, `first_name`, `last_name`, `house_no`, `street_no`, `city`, `date_of_birth`, `password`) VALUES
-(1001, 'Imran', 'Kabir', '12A', '7', 'Dhaka', '2000-05-12', ''),
-(1002, 'Nusrat', 'Akter', '44', '5', 'Chattogram', '2001-11-03', ''),
-(1003, 'Rifat', 'Mahmud', '23', '6', 'Sylhet', '2002-08-19', ''),
-(1004, 'Tanzila', 'Noor', '8B', '12', 'Rajshahi', '2000-02-28', ''),
-(1005, 'Farhan', 'Hossain', '33', '9', 'Khulna', '2003-03-22', ''),
-(1006, 'Mehazabien', 'Mahi', '15C', '11', 'Comilla', '2002-07-17', ''),
-(1007, 'Abrar', 'Ahmed', '10A', '14', 'Barisal', '2001-09-01', ''),
-(1009, 'Abrar', 'Alam', '10', '6C', 'Dhaka', '2002-04-16', ''),
-(1010, 'Torsha', 'Alam', '10', '6C', 'Dhaka', '2002-04-16', ''),
-(1011, 'Sadman', 'Jawad', '10', '6C', 'Dhaka', '2002-04-16', ''),
-(1012, 'abcd', 'efgh', '10', '6C', 'Dhaka', '2025-08-15', ''),
-(1013, 'rerr', 'etr4et', 'rtgrt', '4rt4rt', '4rt4rt', '2025-07-29', ''),
-(1014, 'emran', 'Posh', 'thth', '345', 'fgrg', '2025-08-20', ''),
-(1015, 'beaba', 'doobee', '444', '345', 'Dhaka', '2025-07-31', ''),
-(1016, 'beaba', 'hashmi', 'tuy6u', '1', 'Dhaka', '2025-08-16', 'mmm'),
-(1017, 'rt', 'Delowar', '444', '1', 'tuu', '2025-08-09', '$2y$10$gHe6DzcWqz3XX3mozJFvOuTV7vq9aTKWkzIOfkfqIJXEaYByBTYIe'),
-(1018, 'randy', 'ortega', 'tuy6u', '11', 'Gulshan 2', '2025-09-04', 'hhh');
+(1001, 'Imran', 'Kabir', '12A', '7', 'Dhaka', '2000-05-12', 'Imran133'),
+(1002, 'Nusrat', 'Akter', '44', '5', 'Chattogram', '2001-11-03', 'Nusrat4357'),
+(1003, 'Rifat', 'Mahmud', '23', '6', 'Sylhet', '2002-08-19', 'Rifat1385'),
+(1004, 'Tanzila', 'Noor', '8B', '12', 'Rajshahi', '2000-02-28', 'Tanzila3855'),
+(1005, 'Farhan', 'Hossain', '33', '9', 'Khulna', '2003-03-22', 'Farhan5122'),
+(1006, 'Mehazabien', 'Mahi', '15C', '11', 'Comilla', '2002-07-17', 'Mehazabien4045'),
+(1007, 'Abrar', 'Ahmed', '10A', '14', 'Barisal', '2001-09-01', 'Abrar4859'),
+(1009, 'Abrar', 'Alam', '10', '6C', 'Dhaka', '2002-04-16', 'Abrar2162'),
+(1010, 'Torsha', 'Alam', '10', '6C', 'Dhaka', '2002-04-16', 'Torsha6234'),
+(1011, 'Sadman', 'Jawad', '10', '6C', 'Dhaka', '2002-04-16', 'Sadman4684'),
+(1023, 'Abrar', 'Alam', '10', '6C', 'Tochigi', '2003-04-16', '111'),
+(1025, 'Torsha', 'Alam', '10', '6C', 'Tochigi', '2003-04-16', '112');
 
 -- --------------------------------------------------------
 
@@ -257,6 +256,15 @@ CREATE TABLE `members_email` (
   `email` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `members_email`
+--
+
+INSERT INTO `members_email` (`student_id`, `email`) VALUES
+(1001, 'Imran.the.empyrean@gmail.com'),
+(1001, 'Imran.the.grandiose@gmail.com'),
+(1023, 'abrar.the.empyrean@gmail.com');
+
 -- --------------------------------------------------------
 
 --
@@ -267,6 +275,14 @@ CREATE TABLE `members_phone` (
   `student_id` int(11) NOT NULL,
   `phone_number` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `members_phone`
+--
+
+INSERT INTO `members_phone` (`student_id`, `phone_number`) VALUES
+(1023, '09018510438'),
+(1025, '09018510438');
 
 -- --------------------------------------------------------
 
@@ -290,10 +306,7 @@ INSERT INTO `organizer` (`student_id`, `org_id`, `work_hours`) VALUES
 (1007, 107, 16),
 (1001, 109, 20),
 (1009, 111, 3),
-(1011, 112, 9),
-(1013, 113, 3),
-(1014, 114, 1),
-(1017, 115, 2);
+(1011, 112, 9);
 
 -- --------------------------------------------------------
 
@@ -451,9 +464,8 @@ INSERT INTO `volunteer` (`student_id`, `vol_id`, `report_id`, `start_session`) V
 (1003, 3, NULL, '2024-03-10 08:45:00'),
 (1004, 4, NULL, '2024-01-20 14:00:00'),
 (1010, 5, NULL, '2025-08-17 04:34:00'),
-(1012, 6, NULL, '2025-08-17 07:39:00'),
-(1015, 7, NULL, '2025-08-17 06:50:00'),
-(1018, 8, NULL, '2025-08-22 06:58:00');
+(1023, 11, NULL, '2025-08-17 19:26:00'),
+(1025, 12, NULL, '2025-08-17 19:26:00');
 
 --
 -- Indexes for dumped tables
@@ -485,7 +497,8 @@ ALTER TABLE `advisor_phone`
 --
 ALTER TABLE `clubs`
   ADD PRIMARY KEY (`club_id`),
-  ADD UNIQUE KEY `club_id` (`club_id`);
+  ADD UNIQUE KEY `club_id` (`club_id`),
+  ADD UNIQUE KEY `club_name` (`club_name`);
 
 --
 -- Indexes for table `clubs_cell_number`
@@ -528,7 +541,8 @@ ALTER TABLE `joins`
 -- Indexes for table `members`
 --
 ALTER TABLE `members`
-  ADD PRIMARY KEY (`student_id`);
+  ADD PRIMARY KEY (`student_id`),
+  ADD UNIQUE KEY `unique_password` (`password`);
 
 --
 -- Indexes for table `members_email`
@@ -613,13 +627,13 @@ ALTER TABLE `volunteer`
 -- AUTO_INCREMENT for table `advisor`
 --
 ALTER TABLE `advisor`
-  MODIFY `advisor_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
+  MODIFY `advisor_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=105;
 
 --
 -- AUTO_INCREMENT for table `clubs`
 --
 ALTER TABLE `clubs`
-  MODIFY `club_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `club_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `events`
@@ -643,13 +657,13 @@ ALTER TABLE `feedback`
 -- AUTO_INCREMENT for table `members`
 --
 ALTER TABLE `members`
-  MODIFY `student_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1019;
+  MODIFY `student_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1026;
 
 --
 -- AUTO_INCREMENT for table `organizer`
 --
 ALTER TABLE `organizer`
-  MODIFY `org_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=116;
+  MODIFY `org_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=118;
 
 --
 -- AUTO_INCREMENT for table `partakes`
@@ -691,7 +705,7 @@ ALTER TABLE `supervisor`
 -- AUTO_INCREMENT for table `volunteer`
 --
 ALTER TABLE `volunteer`
-  MODIFY `vol_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `vol_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Constraints for dumped tables
