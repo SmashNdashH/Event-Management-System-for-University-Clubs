@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 16, 2025 at 03:17 AM
+-- Generation Time: Aug 17, 2025 at 11:27 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -121,13 +121,13 @@ CREATE TABLE `events` (
 --
 
 INSERT INTO `events` (`event_id`, `club_id`, `title`, `event_type`, `event_date`, `start_time`, `end_time`, `approval_status`, `total_budget`) VALUES
-(501, 1, 'Science Fair 2025', 'Exhibition', '2025-01-14', '10:00:00', '15:00:00', 'Cancelled', 30000.00),
-(502, 1, 'AI & Robotics Workshop', 'Workshop', '2025-09-05', '09:30:00', '12:30:00', '15000.00', 0.00),
+(501, 1, 'Science Fair 2025', 'Exhibition', '2025-01-14', '10:00:00', '15:00:00', 'Approved', 30000.00),
 (503, 2, 'Drama Fest: Classics Revived', 'Stage Performance', '2024-01-20', '16:00:00', '19:00:00', 'Approved', 25000.00),
 (504, 2, 'Playwriting Seminar', 'Seminar', '2025-10-10', '11:00:00', '16:00:00', 'Approved', 10000.00),
 (506, 2, 'Dance Battle ', 'Stage Performance', '2025-12-12', '23:38:00', '17:40:00', 'Approved', 200000.00),
 (507, 3, 'Intra-University Cricket Tournament', 'Sports event', '2025-12-29', '18:52:00', '18:53:00', 'Approved', 70300.00),
-(508, 3, 'Intra-University Football Tournament', 'Sports event', '2025-11-13', '10:09:00', '19:11:00', 'Approved', 70300.00);
+(508, 3, 'Intra-University Football Tournament', 'Sports event', '2025-11-13', '10:09:00', '19:11:00', 'Approved', 70300.00),
+(510, 1, 'AI and Robotics Workshop', 'Workshop', '2025-09-25', '20:26:00', '17:26:00', 'Approved', 90000.00);
 
 -- --------------------------------------------------------
 
@@ -152,6 +152,7 @@ CREATE TABLE `executive` (
 CREATE TABLE `feedback` (
   `feedback_id` int(11) NOT NULL,
   `student_id` int(11) DEFAULT NULL,
+  `event_id` int(11) NOT NULL,
   `rating` int(11) DEFAULT 0,
   `comments` text DEFAULT NULL,
   `submitted_on` date NOT NULL
@@ -161,8 +162,8 @@ CREATE TABLE `feedback` (
 -- Dumping data for table `feedback`
 --
 
-INSERT INTO `feedback` (`feedback_id`, `student_id`, `rating`, `comments`, `submitted_on`) VALUES
-(2, 1002, 9, 'This party is bussin\\\'.', '2025-08-13');
+INSERT INTO `feedback` (`feedback_id`, `student_id`, `event_id`, `rating`, `comments`, `submitted_on`) VALUES
+(1, 1001, 506, 9, 'The dance battle was effing awesome!', '2025-08-17');
 
 -- --------------------------------------------------------
 
@@ -182,18 +183,26 @@ CREATE TABLE `joins` (
 --
 
 INSERT INTO `joins` (`student_id`, `club_id`, `join_date`, `join_status`) VALUES
-(1001, 1, '2024-01-10', 'Active'),
+(1001, 1, '2025-08-16', 'Active'),
 (1001, 2, '2025-08-13', 'Pending'),
-(1002, 1, '2025-08-13', 'Pending'),
+(1001, 3, '2025-08-16', 'Pending'),
 (1002, 2, '2024-02-15', 'Active'),
 (1002, 3, '2025-08-13', 'Pending'),
 (1003, 3, '2024-01-20', 'Active'),
 (1004, 1, '2024-03-01', 'Active'),
 (1005, 2, '2024-01-25', 'Active'),
+(1006, 1, '2025-08-17', 'Active'),
 (1006, 3, '2024-02-05', 'Inactive'),
 (1007, 1, '2024-01-30', 'Active'),
 (1007, 2, '2025-08-13', 'Pending'),
-(1007, 3, '2025-08-13', 'Pending');
+(1007, 3, '2025-08-13', 'Pending'),
+(1009, 1, '2025-08-17', 'Active'),
+(1009, 2, '2025-08-17', 'Pending'),
+(1009, 3, '2025-08-17', 'Pending'),
+(1010, 1, '2025-08-17', 'Pending'),
+(1010, 2, '2025-08-17', 'Pending'),
+(1010, 3, '2025-08-17', 'Pending'),
+(1011, 1, '2025-08-17', 'Active');
 
 -- --------------------------------------------------------
 
@@ -222,7 +231,10 @@ INSERT INTO `members` (`student_id`, `first_name`, `last_name`, `house_no`, `str
 (1004, 'Tanzila', 'Noor', '8B', '12', 'Rajshahi', '2000-02-28'),
 (1005, 'Farhan', 'Hossain', '33', '9', 'Khulna', '2003-03-22'),
 (1006, 'Mehazabien', 'Mahi', '15C', '11', 'Comilla', '2002-07-17'),
-(1007, 'Abrar', 'Ahmed', '10A', '14', 'Barisal', '2001-09-01');
+(1007, 'Abrar', 'Ahmed', '10A', '14', 'Barisal', '2001-09-01'),
+(1009, 'Abrar', 'Alam', '10', '6C', 'Dhaka', '2002-04-16'),
+(1010, 'Torsha', 'Alam', '10', '6C', 'Dhaka', '2002-04-16'),
+(1011, 'Sadman', 'Jawad', '10', '6C', 'Dhaka', '2002-04-16');
 
 -- --------------------------------------------------------
 
@@ -263,10 +275,12 @@ CREATE TABLE `organizer` (
 --
 
 INSERT INTO `organizer` (`student_id`, `org_id`, `work_hours`) VALUES
-(1001, 101, 15),
 (1005, 105, 18),
 (1006, 106, 22),
-(1007, 107, 16);
+(1007, 107, 16),
+(1001, 109, 20),
+(1009, 111, 3),
+(1011, 112, 9);
 
 -- --------------------------------------------------------
 
@@ -286,11 +300,19 @@ CREATE TABLE `partakes` (
 --
 
 INSERT INTO `partakes` (`student_id`, `event_id`, `attendee_id`, `attendance_status`) VALUES
-(1002, 502, 2, 'Registered'),
+(1001, 504, 7, 'Registered'),
+(1001, 506, 9, 'Registered'),
+(1001, 508, 8, 'Registered'),
 (1002, 504, 3, 'Registered'),
 (1002, 506, 5, 'Registered'),
 (1002, 507, 4, 'Registered'),
-(1002, 508, 1, 'Registered');
+(1002, 508, 1, 'Registered'),
+(1003, 504, 10, 'Registered'),
+(1003, 506, 12, 'Registered'),
+(1003, 507, 13, 'Registered'),
+(1003, 508, 11, 'Registered'),
+(1007, 504, 14, 'Registered'),
+(1011, 510, 15, 'Registered');
 
 -- --------------------------------------------------------
 
@@ -348,11 +370,30 @@ CREATE TABLE `resources` (
 
 INSERT INTO `resources` (`resource_id`, `club_id`, `resource_name`, `resource_type`, `availability_status`, `quantity`) VALUES
 (901, 1, 'Microscope Set', 'Equipment', 'Available', 4),
-(902, 1, 'Arduino Kit', 'Hardware', 'Available', 6),
+(902, 1, 'Arduino Kit', 'Hardware', 'Available', 7),
 (903, 2, 'Stage Lighting Syste', 'Equipment', 'In Use', 1),
 (904, 2, 'Costume Rack', 'Supplies', 'Available', 3),
 (905, 3, 'Cricket Gear Set', 'Equipment', 'Available', 2),
 (906, 3, 'Football Jerseys', 'Supplies', 'Available', 20);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `superadmin`
+--
+
+CREATE TABLE `superadmin` (
+  `SA_ID` int(11) NOT NULL,
+  `advisor_id` int(11) NOT NULL,
+  `password` varchar(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `superadmin`
+--
+
+INSERT INTO `superadmin` (`SA_ID`, `advisor_id`, `password`) VALUES
+(1, 101, 'adminpass');
 
 -- --------------------------------------------------------
 
@@ -395,7 +436,8 @@ CREATE TABLE `volunteer` (
 INSERT INTO `volunteer` (`student_id`, `vol_id`, `report_id`, `start_session`) VALUES
 (1002, 2, NULL, '2024-02-01 10:30:00'),
 (1003, 3, NULL, '2024-03-10 08:45:00'),
-(1004, 4, NULL, '2024-01-20 14:00:00');
+(1004, 4, NULL, '2024-01-20 14:00:00'),
+(1010, 5, NULL, '2025-08-17 04:34:00');
 
 --
 -- Indexes for dumped tables
@@ -406,6 +448,7 @@ INSERT INTO `volunteer` (`student_id`, `vol_id`, `report_id`, `start_session`) V
 --
 ALTER TABLE `advisor`
   ADD PRIMARY KEY (`advisor_id`),
+  ADD UNIQUE KEY `advisor_id` (`advisor_id`),
   ADD KEY `club_id` (`club_id`);
 
 --
@@ -424,7 +467,8 @@ ALTER TABLE `advisor_phone`
 -- Indexes for table `clubs`
 --
 ALTER TABLE `clubs`
-  ADD PRIMARY KEY (`club_id`);
+  ADD PRIMARY KEY (`club_id`),
+  ADD UNIQUE KEY `club_id` (`club_id`);
 
 --
 -- Indexes for table `clubs_cell_number`
@@ -437,6 +481,7 @@ ALTER TABLE `clubs_cell_number`
 --
 ALTER TABLE `events`
   ADD PRIMARY KEY (`event_id`),
+  ADD UNIQUE KEY `event_id` (`event_id`),
   ADD KEY `club_id` (`club_id`);
 
 --
@@ -451,7 +496,9 @@ ALTER TABLE `executive`
 --
 ALTER TABLE `feedback`
   ADD PRIMARY KEY (`feedback_id`),
-  ADD KEY `fk_feedback_member` (`student_id`);
+  ADD UNIQUE KEY `feedback_id` (`feedback_id`),
+  ADD KEY `fk_feedback_member` (`student_id`),
+  ADD KEY `fk_feedback_event` (`event_id`);
 
 --
 -- Indexes for table `joins`
@@ -483,6 +530,7 @@ ALTER TABLE `members_phone`
 --
 ALTER TABLE `organizer`
   ADD PRIMARY KEY (`org_id`),
+  ADD UNIQUE KEY `org_id` (`org_id`),
   ADD KEY `fk_organizer_member` (`student_id`);
 
 --
@@ -490,6 +538,7 @@ ALTER TABLE `organizer`
 --
 ALTER TABLE `partakes`
   ADD PRIMARY KEY (`student_id`,`event_id`,`attendee_id`),
+  ADD UNIQUE KEY `attendee_id` (`attendee_id`),
   ADD KEY `partakes_ibfk_2` (`event_id`);
 
 --
@@ -497,6 +546,7 @@ ALTER TABLE `partakes`
 --
 ALTER TABLE `president`
   ADD PRIMARY KEY (`president_id`),
+  ADD UNIQUE KEY `president_id` (`president_id`),
   ADD KEY `student_id` (`student_id`,`vol_id`);
 
 --
@@ -514,6 +564,15 @@ ALTER TABLE `resources`
   ADD KEY `club_id` (`club_id`);
 
 --
+-- Indexes for table `superadmin`
+--
+ALTER TABLE `superadmin`
+  ADD PRIMARY KEY (`SA_ID`),
+  ADD UNIQUE KEY `SA_ID` (`SA_ID`),
+  ADD UNIQUE KEY `advisor_id` (`advisor_id`),
+  ADD UNIQUE KEY `unique_advisor` (`advisor_id`);
+
+--
 -- Indexes for table `supervisor`
 --
 ALTER TABLE `supervisor`
@@ -526,6 +585,7 @@ ALTER TABLE `supervisor`
 --
 ALTER TABLE `volunteer`
   ADD PRIMARY KEY (`student_id`,`vol_id`),
+  ADD UNIQUE KEY `vol_id` (`vol_id`),
   ADD KEY `report_id` (`report_id`);
 
 --
@@ -533,16 +593,88 @@ ALTER TABLE `volunteer`
 --
 
 --
+-- AUTO_INCREMENT for table `advisor`
+--
+ALTER TABLE `advisor`
+  MODIFY `advisor_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
+
+--
+-- AUTO_INCREMENT for table `clubs`
+--
+ALTER TABLE `clubs`
+  MODIFY `club_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
 -- AUTO_INCREMENT for table `events`
 --
 ALTER TABLE `events`
-  MODIFY `event_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=509;
+  MODIFY `event_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=511;
+
+--
+-- AUTO_INCREMENT for table `executive`
+--
+ALTER TABLE `executive`
+  MODIFY `exec_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `feedback`
 --
 ALTER TABLE `feedback`
-  MODIFY `feedback_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `feedback_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `members`
+--
+ALTER TABLE `members`
+  MODIFY `student_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1012;
+
+--
+-- AUTO_INCREMENT for table `organizer`
+--
+ALTER TABLE `organizer`
+  MODIFY `org_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=113;
+
+--
+-- AUTO_INCREMENT for table `partakes`
+--
+ALTER TABLE `partakes`
+  MODIFY `attendee_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT for table `president`
+--
+ALTER TABLE `president`
+  MODIFY `president_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `report`
+--
+ALTER TABLE `report`
+  MODIFY `report_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `resources`
+--
+ALTER TABLE `resources`
+  MODIFY `resource_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=907;
+
+--
+-- AUTO_INCREMENT for table `superadmin`
+--
+ALTER TABLE `superadmin`
+  MODIFY `SA_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `supervisor`
+--
+ALTER TABLE `supervisor`
+  MODIFY `sup_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1993;
+
+--
+-- AUTO_INCREMENT for table `volunteer`
+--
+ALTER TABLE `volunteer`
+  MODIFY `vol_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables
@@ -588,6 +720,7 @@ ALTER TABLE `executive`
 -- Constraints for table `feedback`
 --
 ALTER TABLE `feedback`
+  ADD CONSTRAINT `fk_feedback_event` FOREIGN KEY (`event_id`) REFERENCES `events` (`event_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_feedback_member` FOREIGN KEY (`student_id`) REFERENCES `members` (`student_id`);
 
 --
@@ -639,6 +772,12 @@ ALTER TABLE `report`
 --
 ALTER TABLE `resources`
   ADD CONSTRAINT `resources_ibfk_1` FOREIGN KEY (`club_id`) REFERENCES `clubs` (`club_id`);
+
+--
+-- Constraints for table `superadmin`
+--
+ALTER TABLE `superadmin`
+  ADD CONSTRAINT `fk_superadmin_advisor` FOREIGN KEY (`advisor_id`) REFERENCES `advisor` (`advisor_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `supervisor`
