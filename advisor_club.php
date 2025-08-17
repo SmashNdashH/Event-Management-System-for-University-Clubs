@@ -15,6 +15,24 @@ $advisor_res = mysqli_query($conn, "SELECT first_name, last_name FROM advisor WH
 $advisor = mysqli_fetch_assoc($advisor_res);
 $advisor_name = $advisor ? ($advisor['first_name'] . ' ' . $advisor['last_name']) : "Advisor";
 
+// Fetch advisor emails (multi-valued)
+$email_res = mysqli_query($conn, "SELECT email FROM Advisor_email WHERE advisor_id = $advisor_id");
+$advisor_emails = [];
+if ($email_res && mysqli_num_rows($email_res) > 0) {
+    while ($row = mysqli_fetch_assoc($email_res)) {
+        $advisor_emails[] = $row['email'];
+    }
+}
+
+// Fetch advisor phone numbers (multi-valued)
+$phone_res = mysqli_query($conn, "SELECT phone_number FROM Advisor_phone WHERE advisor_id = $advisor_id");
+$advisor_phones = [];
+if ($phone_res && mysqli_num_rows($phone_res) > 0) {
+    while ($row = mysqli_fetch_assoc($phone_res)) {
+        $advisor_phones[] = $row['phone_number'];
+    }
+}
+
 // Fetch club info
 $club_res = mysqli_query($conn, "SELECT * FROM clubs WHERE club_id = $club_id");
 $club = mysqli_fetch_assoc($club_res);
@@ -299,7 +317,8 @@ $join_requests_res = mysqli_query($conn, "
     background: white;
     border-radius: 10px;
     padding: 30px;
-    max-width: 900px;
+    max-width: 1060px;
+    margin: auto;
     width: 100%;
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
   }
@@ -379,16 +398,54 @@ $join_requests_res = mysqli_query($conn, "
     padding: 6px 10px;
     font-size: 0.9rem;
   }
+  .logout-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: block;
+    text-align: center;
+  }
+  .logout-btn a {
+    display: inline-block;
+    padding: 8px 14px;
+    background-color: #b52b38;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+  }
+  .logout-btn a:hover { background-color: #cc0000; }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h1>Welcome, <?php echo htmlspecialchars($advisor_name) . " (" . htmlspecialchars($advisor_id) . ")"; ?></h1>
-  <h2 style="font-weight: bold; color: #0056b3; margin-top: 5px; text-align: center; margin-bottom: 10px; border-bottom: 0px solid #ffffffff;">
+  <h1 style="text-align:center; color:#0056b3; margin-bottom:20px;">
+    Welcome, <?php echo htmlspecialchars($advisor_name) . " (" . htmlspecialchars($advisor_id) . ")"; ?>
+  </h1>
 
-    You advise <?php echo htmlspecialchars($club['club_name']); ?>
-  </h2>
+  <div class="advisor-info" style="margin-bottom: 32px;">
+    <p style="margin-bottom: 10px;"><strong>Advisor to:</strong> <?php echo htmlspecialchars($club['club_name']); ?></p>
+    <p style="margin-bottom: 10px;"><strong>Email:</strong>
+      <?php
+        if (!empty($advisor_emails)) {
+          echo htmlspecialchars(implode(', ', $advisor_emails));
+        } else {
+          echo 'Not provided';
+        }
+      ?>
+    </p>
+    <p style="margin-bottom: 10px;"><strong>Phone Number:</strong>
+      <?php
+        if (!empty($advisor_phones)) {
+          echo htmlspecialchars(implode(', ', $advisor_phones));
+        } else {
+          echo 'Not provided';
+        }
+      ?>
+    </p>
+  </div>
 
   <!-- Create/Edit Event Forms -->
   <?php if (!isset($edit_event)) { ?>
@@ -623,9 +680,27 @@ $current_supervisor = mysqli_fetch_assoc($sup_res);
 
 </div>
 
-</div>
-<div class="logout-btn" style="text-align:center; margin-top:20px;">
+<div class="logout-btn" style="top: 20px; right: 20px;">
   <a href="logout.php">Logout</a>
+  <form method="get" action="sa_dashboard.php" style="margin-top:10px;">
+    <button type="submit" style="
+      display: inline-block;
+      padding: 8px 14px;
+      background-color: #007BFF;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      width: 100%;
+      text-align: center;
+      margin-top: 8px;
+    ">Go to Admin Dashboard</button>
+  </form>
 </div>
 
 </body>

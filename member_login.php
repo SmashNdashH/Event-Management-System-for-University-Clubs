@@ -63,19 +63,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   }
   h1 {
     text-align: center;
-    color: #0056b3;
-    margin-bottom: 25px;
+    color: #333; /* Match advisor login */
+    font-weight: bold;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    padding-bottom: 0;
+    letter-spacing: 0.5px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border-bottom: none; /* Remove underline */
   }
   form {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 2px; 
   }
   input[type="text"], input[type="password"] {
     padding: 12px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f7fafc;
+    color: #333;
+    box-sizing: border-box;
+    margin-bottom: 18px;
+  }
+  input::placeholder {
+    color: #888;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 1rem;
+    opacity: 1;
   }
   button {
     background-color: #007BFF;
@@ -95,6 +112,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     text-align: center;
     margin-bottom: 15px;
   }
+  .back {
+    margin-top: 10px;
+    display: block;
+    text-align: center;
+    color: #007BFF;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 1rem;
+    font-weight: 500;
+  }
 </style>
 </head>
 <body>
@@ -107,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <input type="text" name="password" placeholder="Enter your Password" required />
     <button type="submit">Login</button>
   </form>
+  <div class="back" onclick="window.location.href='index.php'">← Back</div>
 </div>
 
 </body>

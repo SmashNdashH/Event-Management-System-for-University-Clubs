@@ -18,6 +18,26 @@ if (!$res || mysqli_num_rows($res) === 0) {
 }
 $member = mysqli_fetch_assoc($res);
 
+// Fetch member emails (multi-valued)
+$sql_email = "SELECT email FROM Members_email WHERE student_id = $student_id";
+$res_email = mysqli_query($conn, $sql_email);
+$emails = [];
+if ($res_email && mysqli_num_rows($res_email) > 0) {
+    while ($row_email = mysqli_fetch_assoc($res_email)) {
+        $emails[] = $row_email['email'];
+    }
+}
+
+// Fetch member phone numbers (multi-valued)
+$sql_phone = "SELECT phone_number FROM Members_phone WHERE student_id = $student_id";
+$res_phone = mysqli_query($conn, $sql_phone);
+$phone_numbers = [];
+if ($res_phone && mysqli_num_rows($res_phone) > 0) {
+    while ($row_phone = mysqli_fetch_assoc($res_phone)) {
+        $phone_numbers[] = $row_phone['phone_number'];
+    }
+}
+
 // Determine position and role
 $position = '';
 $role = '';
@@ -424,7 +444,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
   }
   .logout-btn a {
     display: inline-block;
-    padding: 8px 14px;
+    padding: 12px 20px;
     background-color: #b52b38;
     color: #fff;
     text-decoration: none;
@@ -489,6 +509,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
   <p><strong><?php echo ($position === 'Organizer') ? 'Organizer ID' : 'Volunteer ID'; ?>:</strong> <?php echo htmlspecialchars($id_value); ?></p>
   <p><strong>Position:</strong> <?php echo htmlspecialchars($position); ?></p>
   <p><strong>Role:</strong> <?php echo htmlspecialchars($role ?: 'No role'); ?></p>
+  <p><strong>Email:</strong>
+    <?php
+      if (!empty($emails)) {
+        echo htmlspecialchars(implode(', ', $emails));
+      } else {
+        echo 'Not provided';
+      }
+    ?>
+  </p>
+  <p><strong>Phone Number:</strong>
+    <?php
+      if (!empty($phone_numbers)) {
+        echo htmlspecialchars(implode(', ', $phone_numbers));
+      } else {
+        echo 'Not provided';
+      }
+    ?>
+  </p>
 
   <h2>Your Joined Clubs</h2>
   <?php if (!empty($joined_clubs)): ?>

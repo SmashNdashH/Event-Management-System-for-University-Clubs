@@ -12,13 +12,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $city = trim(mysqli_real_escape_string($conn, $_POST['city']));
     $dob = trim(mysqli_real_escape_string($conn, $_POST['dob']));
     $position = $_POST['position'] ?? '';
-    $password = trim(mysqli_real_escape_string($conn, $_POST['password'])); // <-- plain text
+    $password = trim(mysqli_real_escape_string($conn, $_POST['password']));
+    $email = trim(mysqli_real_escape_string($conn, $_POST['email'] ?? ''));
+    $phone_number = trim(mysqli_real_escape_string($conn, $_POST['phone_number'] ?? ''));
 
     $errors = [];
 
     // --- Validate inputs ---
     if (empty($first_name) || empty($last_name) || empty($city) || empty($password)) {
         $errors[] = "First name, last name, city, and password are required.";
+    }
+    if (empty($email)) {
+        $errors[] = "Email is required.";
+    }
+    if (empty($phone_number)) {
+        $errors[] = "Phone number is required.";
     }
 
     if ($position === 'volunteer') {
@@ -38,6 +46,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Member already exists.";
     }
 
+    // --- Check if password is already taken ---
+    $check_password = "SELECT 1 FROM Members WHERE password='$password' LIMIT 1";
+    $result_pass = mysqli_query($conn, $check_password);
+    if ($result_pass && mysqli_num_rows($result_pass) > 0) {
+        $errors[] = "The password you entered is already taken. Please choose a different password.";
+    }
+
     if (empty($errors)) {
 
         // --- Insert into Members table (plain text password) ---
@@ -47,6 +62,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (mysqli_query($conn, $insert_member)) {
             $student_id = mysqli_insert_id($conn); // Get auto-incremented student_id
             $_SESSION['student_id'] = $student_id;
+
+            // --- Insert email and phone ---
+            $insert_email = "INSERT INTO Members_email (student_id, email) VALUES ($student_id, '$email')";
+            mysqli_query($conn, $insert_email);
+
+            $insert_phone = "INSERT INTO Members_phone (student_id, phone_number) VALUES ($student_id, '$phone_number')";
+            mysqli_query($conn, $insert_phone);
 
             // --- Insert position-specific data ---
             if ($position === 'volunteer') {
@@ -75,10 +97,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Member Sign Up</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%); margin: 0; min-height: 100vh; padding: 20px; display: flex; justify-content: center; align-items: flex-start; }
-        .container { background: white; border-radius: 10px; padding: 32px 36px; max-width: 560px; margin: 40px auto; box-shadow: 0 8px 20px rgba(0,0,0,0.15); width: 100%; }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 32px 36px;
+            max-width: 560px; /* Match feedback.php width */
+            margin: 40px auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            position: relative;
+            width: 100%;
+        }
         h2 { text-align: center; font-weight: bold; font-size: 2rem; margin-bottom: 20px; }
         label { font-weight: 600; display: block; margin-bottom: 8px; color: #555; }
-        input[type="text"], input[type="number"], input[type="date"], input[type="password"], input[type="datetime-local"] { width: 100%; padding: 12px 15px; margin-bottom: 18px; border-radius: 6px; border: 1.8px solid #ccc; font-size: 1rem; background: #f7fafc; }
+        input[type="text"], input[type="number"], input[type="date"], input[type="email"] {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 18px;
+            border-radius: 6px;
+            border: 1.8px solid #ccc;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f7fafc;
+            color: #333;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, input[type="email"]:focus {
+            border-color: #3b82f6;
+            outline: none;
+            box-shadow: 0 0 5px rgba(59,130,246,0.15);
+            background: #eef2ff;
+        }
+        input[type="password"] { width: 100%; padding: 12px 15px; margin-bottom: 18px; border-radius: 6px; border: 1.8px solid #ccc; font-size: 1rem; background: #f7fafc; }
         input:focus { border-color: #3b82f6; outline: none; background: #eef2ff; }
         .radio-group label { margin-right: 18px; }
         .position-specific { display: none; }
@@ -119,7 +169,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="date" name="dob" value="<?= $_POST['dob'] ?? '' ?>">
 
         <label>Password</label>
-        <input type="text" name="password" required value="<?= $_POST['password'] ?? '' ?>"> <!-- show plain text -->
+        <input type="text" name="password" required value="<?= $_POST['password'] ?? '' ?>">
+
+        <label>Email</label>
+        <input type="email" name="email" required value="<?= $_POST['email'] ?? '' ?>">
+
+        <label>Phone Number</label>
+        <input type="text" name="phone_number" required value="<?= $_POST['phone_number'] ?? '' ?>">
 
         <label>Select Position</label>
         <div class="radio-group">
@@ -134,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div id="organizerFields" class="position-specific">
             <label>Work Hours</label>
-            <input type="number" name="work_hours" value="<?= $_POST['work_hours'] ?? '' ?>">
+            <input type="number" name="work_hours" min="0" step="1" value="<?= $_POST['work_hours'] ?? '' ?>">
         </div>
 
         <button type="submit">Sign Up</button>
