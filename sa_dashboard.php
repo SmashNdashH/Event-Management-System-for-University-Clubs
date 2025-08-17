@@ -104,13 +104,13 @@ if (isset($_POST['create_club'])) {
     .container {
         background: white;
         border-radius: 10px;
-        padding: 30px;
-        max-width: 1060px;
-        margin: auto;
-        width: 100%;
+        padding: 32px 36px;
+        max-width: 560px; /* Match member_signup.php width */
+        margin: 40px auto;
         box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         position: relative;
-        z-index: 1;
+        width: 100%;
+        display: block;
     }
     h1, h3 {
         text-align: center;
@@ -130,15 +130,25 @@ if (isset($_POST['create_club'])) {
         margin-top: 30px;
         text-align: left;
     }
-    label {
+    .form-section form {
+        text-align: left;
+        max-width: 840px; /* Increased width for double input size */
+        margin-left: 0;
+    }
+    .form-section label {
+        display: block;
         font-weight: 600;
         color: #555;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         margin-bottom: 8px;
-        display: block;
+        text-align: left;
     }
-    input[type="text"], input[type="email"], input[type="password"], input[type="number"], select {
-        width: 100%;
+    .form-section input[type="text"],
+    .form-section input[type="email"],
+    .form-section input[type="password"],
+    .form-section input[type="number"],
+    .form-section select {
+        width: 100%; /* Twice the previous width */
+        min-width: 360px;
         padding: 12px 15px;
         margin-bottom: 18px;
         border-radius: 6px;
@@ -149,6 +159,15 @@ if (isset($_POST['create_club'])) {
         background: #f7fafc;
         color: #333;
         box-sizing: border-box;
+        display: block;
+        margin-left: 0;
+    }
+    .form-section button {
+        width: auto;
+        min-width: 180px;
+        margin-left: 0;
+        margin-top: 18px;
+        display: block;
     }
     input:focus, select:focus {
         border-color: #3b82f6;
@@ -238,8 +257,8 @@ if (isset($_POST['create_club'])) {
     </form>
 </div>
 
-<div class="container" style="margin-top: 10px;">
-    <h1>Super Admin Dashboard</h1>
+<div class="container" style="margin-top: 40px;">
+    <h1 style="text-align:center;">Advisor Admin Dashboard</h1>
     <?php 
     if (!empty($errors)) { 
         echo '<div class="errors"><ul>';
@@ -251,9 +270,9 @@ if (isset($_POST['create_club'])) {
     ?>
 
     <!-- Create New Club and Assign Advisor -->
-    <div class="form-section">
-        <h2>Create New Club & Assign Advisor</h2>
-        <form method="POST">
+    <div class="form-section" style="margin-left:0; margin-right:0;">
+        <h2 style="text-align:center;">Register New Club & Assign Advisor</h2>
+        <form method="POST" style="margin-left:0; margin-right:0;">
             <label for="club_name">Club Name</label>
             <input type="text" name="club_name" id="club_name" placeholder="Club Name" required>
             <label for="cell_number">Club Cell Number</label>
@@ -275,7 +294,7 @@ if (isset($_POST['create_club'])) {
             <input type="email" name="email" id="email" placeholder="Advisor Email" required>
             <label for="phone">Advisor Phone Number</label>
             <input type="text" name="phone" id="phone" placeholder="Advisor Phone Number" required>
-            <button type="submit" name="create_club">Create Club & Assign Advisor</button>
+            <button type="submit" name="create_club" style="width:auto; min-width:180px; margin-left:0; margin-top:18px; display:block;">Create Club & Assign Advisor</button>
         </form>
     </div>
 </div>

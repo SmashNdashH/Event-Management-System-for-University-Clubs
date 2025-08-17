@@ -753,6 +753,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['undo_report_id'])) {
           <td>
             <?php if (!empty($fe['submitted_feedback_id'])): ?>
               <span class="badge badge-green">Submitted</span>
+              <?php
+                // Fetch submitted feedback details
+                $feedback_id = (int)$fe['submitted_feedback_id'];
+                $sql_fb = "SELECT rating, comments, submitted_on FROM feedback WHERE feedback_id = $feedback_id";
+                $res_fb = mysqli_query($conn, $sql_fb);
+                if ($res_fb && $fb_row = mysqli_fetch_assoc($res_fb)):
+              ?>
+                <div style="border:1.5px solid #78d3a5; border-radius:8px; padding:12px; margin-top:10px; background:#e7f8ee;">
+                  <div style="margin-bottom:8px;">
+                    <strong>Rating:</strong> <?php echo (int)$fb_row['rating']; ?>
+                  </div>
+                  <div style="margin-bottom:8px;">
+                    <strong>Comments:</strong> <?php echo htmlspecialchars($fb_row['comments']); ?>
+                  </div>
+                  <div>
+                    <strong>Submitted On:</strong> <?php echo htmlspecialchars($fb_row['submitted_on']); ?>
+                  </div>
+                </div>
+              <?php endif; ?>
             <?php else: ?>
               <a 
                 class="action-btn" 

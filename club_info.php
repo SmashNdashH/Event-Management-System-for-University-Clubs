@@ -69,7 +69,9 @@ if ($feedback_res && mysqli_num_rows($feedback_res) > 0) {
             <?php foreach ($feedbacks as $fb): ?>
                 <div class="feedback-item">
                     <strong><?php echo htmlspecialchars($fb['event_title']); ?> (<?php echo htmlspecialchars($fb['event_date']); ?>)</strong><br>
-                    <span><?php echo htmlspecialchars($fb['feedback_text']); ?></span>
+                    <strong>Rating:</strong> <?php echo htmlspecialchars($fb['rating']); ?><br>
+                    <strong>Comments:</strong> <?php echo htmlspecialchars($fb['comments']); ?><br>
+                    <strong>Submitted On:</strong> <?php echo htmlspecialchars($fb['submitted_on']); ?>
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
