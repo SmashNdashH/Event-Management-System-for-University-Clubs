@@ -262,6 +262,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header("Location: advisor_club.php");
         exit;
     }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['go_admin_dashboard'])) {
+        // Get superadmin advisor_id from superadmin table (assuming only one superadmin)
+        $sa_res = mysqli_query($conn, "SELECT advisor_id FROM superadmin LIMIT 1");
+        if ($sa_row = mysqli_fetch_assoc($sa_res)) {
+            $_SESSION['superadmin_id'] = $sa_row['advisor_id'];
+            header("Location: sa_dashboard.php");
+            exit;
+        } else {
+            header("Location: login_advisor.php");
+            exit;
+        }
+    }
 }
 
 // Fetch events
@@ -682,25 +695,14 @@ $current_supervisor = mysqli_fetch_assoc($sup_res);
 
 <div class="logout-btn" style="top: 20px; right: 20px;">
   <a href="logout.php">Logout</a>
-  <form method="get" action="sa_dashboard.php" style="margin-top:10px;">
-    <button type="submit" style="
-      display: inline-block;
-      padding: 8px 14px;
-      background-color: #007BFF;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      font-family: inherit;
-      font-weight: 500;
-      border: none;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      width: 100%;
-      text-align: center;
-      margin-top: 8px;
-    ">Go to Admin Dashboard</button>
+  <?php if ($advisor_id == 101): ?>
+  <form method="post" style="margin-top:10px;">
+    <button type="submit" name="go_admin_dashboard"
+        style="display: inline-block; padding: 8px 14px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 6px; font-size: 0.9rem; font-family: inherit; font-weight: 500; border: none; cursor: pointer; transition: background-color 0.3s ease; width: 100%; text-align: center; margin-top: 8px;">
+        Go to Admin Dashboard
+    </button>
   </form>
+  <?php endif; ?>
 </div>
 
 </body>

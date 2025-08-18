@@ -8,6 +8,22 @@ if (!isset($_SESSION['superadmin_id'])) {
     exit;
 }
 
+// Handle Go to Advisor Dashboard button
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['go_advisor_dashboard'])) {
+    // Get any advisor (e.g., the first one)
+    $adv_res = mysqli_query($conn, "SELECT advisor_id, club_id FROM advisor LIMIT 1");
+    if ($adv_row = mysqli_fetch_assoc($adv_res)) {
+        $_SESSION['advisor_id'] = $adv_row['advisor_id'];
+        $_SESSION['club_id'] = $adv_row['club_id'];
+        header("Location: advisor_club.php");
+        exit;
+    } else {
+        // No advisor found, redirect to login
+        header("Location: login_advisor.php");
+        exit;
+    }
+}
+
 $errors = [];
 $success_club = '';
 $success_advisor = '';
@@ -237,23 +253,11 @@ if (isset($_POST['create_club'])) {
 <!-- Logout and Go to Advisor Dashboard buttons outside the container -->
 <div class="logout-btn">
     <a href="logout.php">Logout</a>
-    <form method="get" action="advisor_club.php" style="margin-top:10px;">
-        <button type="submit" style="
-            display: inline-block;
-            padding: 8px 14px;
-            background-color: #007BFF;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-family: inherit;
-            font-weight: 500;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            width: 100%;
-            text-align: center;
-        ">Go to Advisor Dashboard</button>
+    <form method="get" action="sa_dashboard.php" style="margin-top:10px;">
+        <button type="submit" name="go_advisor_dashboard"
+            style="display: inline-block; padding: 8px 14px; background-color: #007BFF; color: #fff; text-decoration: none; border-radius: 6px; font-size: 0.9rem; font-family: inherit; font-weight: 500; border: none; cursor: pointer; transition: background-color 0.3s ease; width: 100%; text-align: center;">
+            Go to Advisor Dashboard
+        </button>
     </form>
 </div>
 
