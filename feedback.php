@@ -2,15 +2,17 @@
 include 'connection.php';
 session_start();
 
+// Redirect to member login if not logged in
 if (!isset($_SESSION['student_id'])) {
     header("Location: member_login.php");
     exit;
 }
 $student_id = (int)$_SESSION['student_id'];
 
+// Get event_id from GET parameter
 $event_id = isset($_GET['event_id']) ? (int)$_GET['event_id'] : 0;
 
-// Validate the event_id and that the current user is registered for it
+// Initialize variables for event and feedback status
 $event = null;
 $is_registered = false;
 $already_submitted = false;
@@ -18,9 +20,9 @@ $existing_feedback_id = null;
 $success_msg = $error_msg = '';
 $rating = $comments = $submitted_on = '';
 
-// If event_id is provided, fetch event info and registration status
+// If event_id is provided, fetch event info and check registration/feedback status
 if ($event_id > 0) {
-    // Get event info
+    // Fetch event details
     $sql_event = "
         SELECT e.event_id, e.title, e.event_date, e.event_type, c.club_name
         FROM events e
@@ -33,7 +35,7 @@ if ($event_id > 0) {
         $event = mysqli_fetch_assoc($res_event);
     }
 
-    // Check if the student is registered for this event
+    // Check if student is registered for this event
     $sql_registered = "
         SELECT 1 
         FROM partakes 
@@ -61,11 +63,11 @@ if ($event_id > 0) {
     }
 }
 
-// Handle submission
+// Handle feedback form submission
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $event_id = isset($_POST['event_id']) ? (int)$_POST['event_id'] : 0;
 
-    // Re-validate that the user can submit for this event
+    // Re-validate registration and feedback status for submitted event
     $sql_registered2 = "
         SELECT 1 
         FROM partakes 
@@ -91,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $existing_feedback_id = (int)$rxx['feedback_id'];
     }
 
-    // Fetch event again for display
+    // Fetch event details again for display
     $sql_event2 = "
         SELECT e.event_id, e.title, e.event_date, e.event_type, c.club_name
         FROM events e
@@ -104,10 +106,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $event = mysqli_fetch_assoc($res_event2);
     }
 
+    // Get submitted feedback data
     $rating = isset($_POST['rating']) ? (int)$_POST['rating'] : 0;
     $comments = mysqli_real_escape_string($conn, $_POST['comments'] ?? '');
     $submitted_on = $_POST['submitted_on'] ?? '';
 
+    // Validate feedback submission
     if ($event_id <= 0 || !$event) {
         $error_msg = "Invalid event.";
     } elseif (!$is_registered) {
@@ -117,7 +121,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     } elseif (empty($submitted_on)) {
         $error_msg = "Submitted date is required.";
     } else {
-        // Insert into Feedback (your original table)
+        // Insert feedback into database
         $sql = "INSERT INTO feedback (student_id, event_id, rating, comments, submitted_on) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         if ($stmt === false) {

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 18, 2025 at 08:29 AM
+-- Generation Time: Aug 18, 2025 at 11:26 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -42,7 +42,9 @@ CREATE TABLE `advisor` (
 INSERT INTO `advisor` (`advisor_id`, `club_id`, `first_name`, `last_name`, `password`) VALUES
 (101, 1, 'Zahirul', 'Islam', 'Zahirul123'),
 (102, 2, 'Farhana', 'Kabir', 'Farhana456'),
-(103, 3, 'Nazmul', 'Ferdous', 'Nazmul789');
+(103, 3, 'Nazmul', 'Ferdous', 'Nazmul789'),
+(105, 6, 'Yusuf', 'Sarkar', 'chorommullo'),
+(106, 7, 'hfgfgd', 'frfdddd', 'ddddd');
 
 -- --------------------------------------------------------
 
@@ -55,6 +57,14 @@ CREATE TABLE `advisor_email` (
   `email` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `advisor_email`
+--
+
+INSERT INTO `advisor_email` (`advisor_id`, `email`) VALUES
+(105, 'yusuf.the.empyrean@gmail.com'),
+(106, 'hghfhf@gmail.cim');
+
 -- --------------------------------------------------------
 
 --
@@ -65,6 +75,14 @@ CREATE TABLE `advisor_phone` (
   `advisor_id` int(11) NOT NULL,
   `phone_number` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `advisor_phone`
+--
+
+INSERT INTO `advisor_phone` (`advisor_id`, `phone_number`) VALUES
+(105, '08018510638'),
+(106, '3234');
 
 -- --------------------------------------------------------
 
@@ -87,7 +105,9 @@ INSERT INTO `clubs` (`club_id`, `club_name`, `registration_date`, `status`) VALU
 (1, 'Science Club', '2023-01-15', 'Active'),
 (2, 'Drama Club', '2022-09-10', 'Active'),
 (3, 'Sports Club', '2021-06-20', 'Active'),
-(4, 'Art Club', '2025-08-17', 'Active');
+(4, 'Art Club', '2025-08-17', 'Active'),
+(6, 'YEF', '2025-08-18', 'Active'),
+(7, 'adventure club', '2025-08-18', 'Active');
 
 -- --------------------------------------------------------
 
@@ -105,7 +125,9 @@ CREATE TABLE `clubs_cell_number` (
 --
 
 INSERT INTO `clubs_cell_number` (`club_id`, `cell_number`) VALUES
-(4, '019999999');
+(4, '019999999'),
+(6, 'Club'),
+(7, '545454');
 
 -- --------------------------------------------------------
 
@@ -136,7 +158,8 @@ INSERT INTO `events` (`event_id`, `club_id`, `title`, `event_type`, `event_date`
 (506, 2, 'Dance Battle ', 'Stage Performance', '2025-12-12', '23:38:00', '17:40:00', 'Approved', 200000.00),
 (507, 3, 'Intra-University Cricket Tournament', 'Sports event', '2025-12-29', '18:52:00', '18:53:00', 'Approved', 70300.00),
 (508, 3, 'Intra-University Football Tournament', 'Sports event', '2025-11-13', '10:09:00', '19:11:00', 'Approved', 70300.00),
-(510, 1, 'AI and Robotics Workshop', 'Workshop', '2025-09-25', '20:26:00', '17:26:00', 'Approved', 90000.00);
+(512, 1, 'Math Olympiad', 'Competitioon', '2025-08-18', '15:36:00', '15:35:00', 'Disapproved', 554.00),
+(513, 6, 'EconoForum Semninar', 'Seminar', '2025-08-31', '15:46:00', '15:45:00', 'Approved', 450353.00);
 
 -- --------------------------------------------------------
 
@@ -151,6 +174,13 @@ CREATE TABLE `executive` (
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `executive`
+--
+
+INSERT INTO `executive` (`student_id`, `vol_id`, `exec_id`, `start_date`, `end_date`) VALUES
+(1004, 4, 7427, '2025-08-18', NULL);
 
 -- --------------------------------------------------------
 
@@ -172,7 +202,8 @@ CREATE TABLE `feedback` (
 --
 
 INSERT INTO `feedback` (`feedback_id`, `student_id`, `event_id`, `rating`, `comments`, `submitted_on`) VALUES
-(1, 1001, 506, 9, 'The dance battle was effing awesome!', '2025-08-17');
+(1, 1001, 506, 9, 'The dance battle was hella awesome!', '2025-08-17'),
+(7, 1027, 513, 10, 'lit', '2025-08-18');
 
 -- --------------------------------------------------------
 
@@ -208,7 +239,9 @@ INSERT INTO `joins` (`student_id`, `club_id`, `join_date`, `join_status`) VALUES
 (1009, 1, '2025-08-17', 'Active'),
 (1009, 2, '2025-08-17', 'Pending'),
 (1009, 3, '2025-08-17', 'Pending'),
-(1010, 2, '2025-08-17', 'Active');
+(1010, 2, '2025-08-17', 'Active'),
+(1027, 2, '2025-08-18', 'Pending'),
+(1027, 4, '2025-08-18', 'Pending');
 
 -- --------------------------------------------------------
 
@@ -244,7 +277,9 @@ INSERT INTO `members` (`student_id`, `first_name`, `last_name`, `house_no`, `str
 (1011, 'Sadman', 'Jawad', '10', '6C', 'Dhaka', '2002-04-16', 'Sadman4684'),
 (1023, 'Abrar', 'Alam', '10', '6C', 'Tochigi', '2003-04-16', '111'),
 (1025, 'Torsha', 'Alam', '10', '6C', 'Tochigi', '2003-04-16', '112'),
-(1026, 'Sadia', 'Afrin', '10', '6C', 'Tochigi', '0000-00-00', '117');
+(1026, 'Sadia', 'Afrin', '10', '6C', 'Tochigi', '0000-00-00', '117'),
+(1027, 'Sadia', 'Alam', '10', '6C', 'Tochigi', '0000-00-00', '200'),
+(1028, 'Alam', 'Abrar', '10', '6C', 'Tochigi', '0000-00-00', '122');
 
 -- --------------------------------------------------------
 
@@ -265,7 +300,9 @@ INSERT INTO `members_email` (`student_id`, `email`) VALUES
 (1001, 'Imran.the.empyrean@gmail.com'),
 (1001, 'Imran.the.grandiose@gmail.com'),
 (1023, 'abrar.the.empyrean@gmail.com'),
-(1026, 'abrar.the.empyrean@gmail.com');
+(1026, 'abrar.the.empyrean@gmail.com'),
+(1027, 'abrar.the.empyrean@gmail.com'),
+(1028, 'abrar.the.empyrean@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -285,7 +322,9 @@ CREATE TABLE `members_phone` (
 INSERT INTO `members_phone` (`student_id`, `phone_number`) VALUES
 (1023, '09018510438'),
 (1025, '09018510438'),
-(1026, '09018510438');
+(1026, '09018510438'),
+(1027, '09018510438'),
+(1028, '09018510438');
 
 -- --------------------------------------------------------
 
@@ -309,7 +348,8 @@ INSERT INTO `organizer` (`student_id`, `org_id`, `work_hours`) VALUES
 (1006, 106, 22),
 (1007, 107, 16),
 (1009, 111, 3),
-(1011, 112, 9);
+(1011, 112, 9),
+(1027, 118, 1);
 
 -- --------------------------------------------------------
 
@@ -332,17 +372,18 @@ INSERT INTO `partakes` (`student_id`, `event_id`, `attendee_id`, `attendance_sta
 (1001, 504, 7, 'Registered'),
 (1001, 506, 9, 'Registered'),
 (1001, 508, 8, 'Registered'),
+(1001, 513, 18, 'Registered'),
 (1002, 504, 3, 'Registered'),
 (1002, 506, 5, 'Registered'),
 (1002, 507, 4, 'Registered'),
 (1002, 508, 1, 'Registered'),
-(1002, 510, 16, 'Registered'),
 (1003, 504, 10, 'Registered'),
 (1003, 506, 12, 'Registered'),
 (1003, 507, 13, 'Registered'),
 (1003, 508, 11, 'Registered'),
+(1004, 504, 19, 'Registered'),
 (1007, 504, 14, 'Registered'),
-(1011, 510, 15, 'Registered');
+(1027, 513, 20, 'Registered');
 
 -- --------------------------------------------------------
 
@@ -363,7 +404,8 @@ CREATE TABLE `president` (
 --
 
 INSERT INTO `president` (`student_id`, `vol_id`, `president_id`, `start_date`, `end_date`) VALUES
-(1002, 2, 2, '2025-08-13', NULL);
+(1002, 2, 2, '2025-08-13', NULL),
+(1004, 4, 4042, '2025-08-18', NULL);
 
 -- --------------------------------------------------------
 
@@ -443,7 +485,8 @@ CREATE TABLE `supervisor` (
 --
 
 INSERT INTO `supervisor` (`student_id`, `org_id`, `sup_id`, `start_date`, `end_date`) VALUES
-(1005, 105, 1992, '2025-08-13', NULL);
+(1005, 105, 1992, '2025-08-13', NULL),
+(1001, 109, 8469, '2025-08-18', NULL);
 
 -- --------------------------------------------------------
 
@@ -469,7 +512,8 @@ INSERT INTO `volunteer` (`student_id`, `vol_id`, `report_id`, `start_session`) V
 (1010, 5, NULL, '2025-08-17 04:34:00'),
 (1023, 11, NULL, '2025-08-17 19:26:00'),
 (1025, 12, NULL, '2025-08-17 19:26:00'),
-(1026, 13, NULL, '2025-08-18 04:16:00');
+(1026, 13, NULL, '2025-08-18 04:16:00'),
+(1028, 14, NULL, '2025-08-18 17:53:00');
 
 --
 -- Indexes for dumped tables
@@ -629,55 +673,55 @@ ALTER TABLE `volunteer`
 -- AUTO_INCREMENT for table `advisor`
 --
 ALTER TABLE `advisor`
-  MODIFY `advisor_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=105;
+  MODIFY `advisor_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
 
 --
 -- AUTO_INCREMENT for table `clubs`
 --
 ALTER TABLE `clubs`
-  MODIFY `club_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `club_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `events`
 --
 ALTER TABLE `events`
-  MODIFY `event_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=511;
+  MODIFY `event_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=514;
 
 --
 -- AUTO_INCREMENT for table `executive`
 --
 ALTER TABLE `executive`
-  MODIFY `exec_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `exec_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7428;
 
 --
 -- AUTO_INCREMENT for table `feedback`
 --
 ALTER TABLE `feedback`
-  MODIFY `feedback_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `feedback_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `members`
 --
 ALTER TABLE `members`
-  MODIFY `student_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1027;
+  MODIFY `student_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1029;
 
 --
 -- AUTO_INCREMENT for table `organizer`
 --
 ALTER TABLE `organizer`
-  MODIFY `org_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=118;
+  MODIFY `org_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
 
 --
 -- AUTO_INCREMENT for table `partakes`
 --
 ALTER TABLE `partakes`
-  MODIFY `attendee_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `attendee_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `president`
 --
 ALTER TABLE `president`
-  MODIFY `president_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `president_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7912;
 
 --
 -- AUTO_INCREMENT for table `report`
@@ -701,13 +745,13 @@ ALTER TABLE `superadmin`
 -- AUTO_INCREMENT for table `supervisor`
 --
 ALTER TABLE `supervisor`
-  MODIFY `sup_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1993;
+  MODIFY `sup_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8470;
 
 --
 -- AUTO_INCREMENT for table `volunteer`
 --
 ALTER TABLE `volunteer`
-  MODIFY `vol_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `vol_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- Constraints for dumped tables

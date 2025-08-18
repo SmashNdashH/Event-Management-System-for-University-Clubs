@@ -2,6 +2,7 @@
 include 'connection.php';
 session_start();
 
+// Check if advisor is logged in and club is selected; if not, redirect to advisor login page
 if (!isset($_SESSION['advisor_id']) || !isset($_SESSION['club_id'])) {
     header("Location: login_advisor.php");
     exit;

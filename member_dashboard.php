@@ -122,7 +122,7 @@ if ($res_all_clubs && mysqli_num_rows($res_all_clubs) > 0) {
     }
 }
 
-// Handle club join application submission
+// Handle club join application submission (apply button logic)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_club_id'])) {
     $apply_club_id = (int)$_POST['apply_club_id'];
 
@@ -346,7 +346,7 @@ foreach ($events as $ev) {
     }
 }
 
-// Handle feedback submission (new code block integrated)
+// Handle feedback submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
     $event_id = (int)$_POST['event_id'];
     $rating = (int)$_POST['rating'];
@@ -363,7 +363,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_feedback'])) {
     exit;
 }
 
-// Handle undo submit (move this to top, before any HTML)
+// Handle undo submit report of President
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['undo_report_id'])) {
     $undo_report_id = (int)$_POST['undo_report_id'];
     mysqli_query($conn, "DELETE FROM report WHERE report_id = $undo_report_id");
